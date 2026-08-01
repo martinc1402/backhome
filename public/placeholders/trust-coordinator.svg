@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" width="900" height="1100" role="img" aria-label="Placeholder image">
+  <defs>
+    <linearGradient id="warm2" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#fffdf6"/>
+      <stop offset="55%" stop-color="#eee6d2"/>
+      <stop offset="100%" stop-color="#d2c8a9"/>
+    </linearGradient>
+    <clipPath id="frame2"><rect width="900" height="1100"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#frame2)">
+    <rect width="900" height="1100" fill="url(#warm2)"/>
+
+    <!-- Interior: window light -->
+    <rect x="524" y="120" width="300" height="380" rx="16" fill="#fffdf6" opacity="0.7"/>
+    <line x1="674" y1="120" x2="674" y2="500" stroke="#fffdf6" stroke-width="10"/>
+    <line x1="524" y1="310" x2="824" y2="310" stroke="#fffdf6" stroke-width="10"/>
+    <circle cx="150" cy="250" r="200" fill="#d5e798" opacity="0.35"/>
+
+    <!-- Seated older family member, left -->
+    <g fill="#897863">
+      <path d="M138 1100 C138 800 196 598 286 598 C376 598 434 800 434 1100 Z"/>
+      <circle cx="286" cy="524" r="92"/>
+    </g>
+
+    <!-- Coordinator, right, turned toward them -->
+    <g fill="#0c310a">
+      <path d="M462 1100 C462 806 516 556 602 556 C688 556 742 806 742 1100 Z"/>
+      <circle cx="602" cy="486" r="86"/>
+    </g>
+
+    <!-- Notepad in hand -->
+    <rect x="398" y="792" width="112" height="148" rx="18" fill="#fffdf6"/>
+    <line x1="422" y1="830" x2="486" y2="830" stroke="#57772e" stroke-width="8" stroke-linecap="round"/>
+    <line x1="422" y1="862" x2="486" y2="862" stroke="#d2c8a9" stroke-width="8" stroke-linecap="round"/>
+    <line x1="422" y1="894" x2="462" y2="894" stroke="#d2c8a9" stroke-width="8" stroke-linecap="round"/>
+
+    <!-- Placeholder badge -->
+    <g transform="translate(44 44)">
+      <rect width="404" height="118" rx="24" fill="#0c310a" opacity="0.92"/>
+      <text x="26" y="44" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="19" letter-spacing="2.2" fill="#d5e798">▨ PLACEHOLDER</text>
+      <text x="26" y="74" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" fill="#fffdf6">Local coordinator speaking with a</text>
+      <text x="26" y="99" font-family="ui-sans-serif, system-ui, sans-serif" font-size="18" fill="#fffdf6">family member, Cebu home · 900×1100</text>
+    </g>
+  </g>
+</svg>

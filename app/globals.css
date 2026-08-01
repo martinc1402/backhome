@@ -1,26 +1,198 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ---------------------------------------------------------------------------
+   BackHome design tokens
+
+   Palette, radii and type scale measured from huts.com's rendered styles.
+   The defining cue of that design language is that EVERYTHING IS WEIGHT 400 —
+   hierarchy comes from scale contrast and whitespace, never from bold. Resist
+   adding font-semibold/font-bold; it breaks the whole register.
+
+   Tailwind v4 is CSS-first: there is no tailwind.config file. Tokens declared
+   here become utilities (bg-cream, text-forest, rounded-card, ...).
+--------------------------------------------------------------------------- */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Surfaces */
+  --color-base: #faf7ed; /* page background */
+  --color-cream: #fffdf6; /* dominant section + card surface */
+  --color-sand: #d2c8a9;
+  --color-stone: #c2c4be;
+
+  /* Greens */
+  --color-forest: #0c310a; /* primary ink, dark bands, footer */
+  --color-forest-deep: #071d06;
+  --color-moss: #57772e;
+  --color-lime: #d5e798; /* accent fill — never text on a light bg */
+  --color-lime-deep: #c3d97e;
+
+  /* Warm neutrals */
+  --color-bark: #664a42; /* body + secondary text, nav */
+  --color-ink: #1e1414; /* form input text */
+  --color-brown: #674d34;
+  --color-taupe: #897863; /* decorative only — fails AA on cream */
+
+  /* Lines */
+  --color-line: #e6e0d0;
+  --color-line-strong: #d6cdb8;
+
+  /* Type */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-newsreader);
+
+  /* Radii — 24px cards and 999px pills are the signature */
+  --radius-card: 24px;
+  --radius-sm: 16px;
+  --radius-pill: 999px;
+
+  /* Shadows — barely there. huts.com uses almost none. */
+  --shadow-card: 0 1px 2px rgb(12 49 10 / 0.03), 0 12px 32px -20px rgb(12 49 10 / 0.16);
+  --shadow-lift: 0 2px 4px rgb(12 49 10 / 0.04), 0 24px 56px -28px rgb(12 49 10 / 0.24);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    /* Next 16 no longer overrides scroll-behavior during navigation; the
+       matching data-scroll-behavior="smooth" attribute is set in layout.tsx. */
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background-color: var(--color-base);
+    color: var(--color-bark);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Weight 400 across every heading level — see the note at the top. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif), ui-serif, Georgia, serif;
+    font-weight: 400;
+    color: var(--color-forest);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Visible focus for keyboard users on every interactive element. */
+  :focus-visible {
+    outline: 2px solid var(--color-forest);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* On forest/photographic sections a forest outline would be invisible. */
+  .on-dark :focus-visible {
+    outline-color: var(--color-lime);
+  }
+
+  /* Anchor targets clear the fixed header. */
+  :target {
+    scroll-margin-top: 6rem;
+  }
+
+  ::selection {
+    background-color: var(--color-lime);
+    color: var(--color-forest);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* ---- Display type scale -------------------------------------------------
+     huts.com's desktop sizes are the clamp ceiling: 148 / 72 / 56 / 40 / 32.
+     Negative tracking tightens as size grows, matching the reference. */
+
+  .type-mega {
+    font-size: clamp(4rem, 14vw, 9.25rem); /* → 148px */
+    line-height: 0.95;
+    letter-spacing: -0.026em;
+  }
+
+  .type-display {
+    font-size: clamp(2.5rem, 7vw, 4.5rem); /* → 72px */
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+  }
+
+  .type-h2 {
+    font-size: clamp(2rem, 5vw, 3.5rem); /* → 56px */
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .type-h3 {
+    font-size: clamp(1.75rem, 3.6vw, 2.5rem); /* → 40px */
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .type-h4 {
+    font-size: clamp(1.375rem, 2.4vw, 2rem); /* → 32px */
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+
+  .type-label {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---- Form fields ------------------------------------------------------ */
+
+  .field-input {
+    width: 100%;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-line-strong);
+    background-color: var(--color-cream);
+    padding: 0.8125rem 1rem;
+    /* 16px minimum stops iOS Safari zooming the page on focus. */
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-ink);
+    /* Comfortable touch target on mobile. */
+    min-height: 3.25rem;
+  }
+
+  .field-input::placeholder {
+    color: var(--color-taupe);
+  }
+
+  .field-input[aria-invalid="true"] {
+    border-color: #9a3412;
+    background-color: #fdf5f1;
+  }
+
+  .field-input:focus-visible {
+    outline: 2px solid var(--color-forest);
+    outline-offset: 1px;
+    border-color: var(--color-forest);
+  }
+
+  /* A native select needs its own chevron once appearance is reset. */
+  select.field-input {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23664a42' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.75rem;
+  }
+
+  textarea.field-input {
+    min-height: 7.5rem;
+    resize: vertical;
+  }
 }
