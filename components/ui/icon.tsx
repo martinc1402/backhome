@@ -106,34 +106,44 @@ export function Icon({ name, className = "h-6 w-6" }: IconProps) {
   );
 }
 
-/** The abstract house-and-heart mark used in the header and footer wordmark. */
-export function BackHomeMark({ className = "h-6 w-6" }: { className?: string }) {
+/**
+ * The BackHome mark: an arch with a heart inside it. Used beside the wordmark
+ * in the header.
+ *
+ * Geometry is the brand file `public/brand/backhome-mark-mono.svg`, kept inline
+ * rather than referenced as an <img> for one reason: the header tints the mark
+ * (lime over the hero, moss once the header goes solid), and only an inline SVG
+ * inherits `currentColor`. If you edit the artwork, edit both — the file is the
+ * source of truth, this is the tintable copy.
+ *
+ * The viewBox is cropped to the drawing's true bounds rather than the 48×48
+ * square the file ships with. Those bounds include the 3.8 stroke and its round
+ * caps: x 13.1–34.9, y 8.6–39.4. Cropping means the element box IS the mark, so
+ * the header's `gap` sets the real optical distance to the wordmark instead of
+ * padding it out with ~5px of dead space on each side.
+ *
+ * The result is portrait (22×31), so size it by height and let width follow —
+ * `h-7 w-auto`, not `h-7 w-7`.
+ */
+export function BackHomeMark({ className = "h-6 w-auto" }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox="13 8.5 22 31"
       fill="none"
       className={className}
       aria-hidden="true"
       focusable="false"
     >
       <path
-        d="M3 11.2L12 3.5l9 7.7"
+        d="M15,37.5 L15,19.5 A9,9 0 0 1 33,19.5 L33,37.5"
         stroke="currentColor"
-        strokeWidth={1.7}
+        strokeWidth={3.8}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M5.4 10.2V20.5h13.2V10.2"
-        stroke="currentColor"
-        strokeWidth={1.7}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 17.6s-3-1.9-3-4a1.8 1.8 0 0 1 3-1.3 1.8 1.8 0 0 1 3 1.3c0 2.1-3 4-3 4z"
+        d="M24,29.9 C19.4,26.1 18.7,24.9 18.7,23.2 C18.7,21.2 20.2,20.5 21.5,20.8 C22.6,21 23.5,22 24,23 C24.5,22 25.4,21 26.5,20.8 C27.8,20.5 29.3,21.2 29.3,23.2 C29.3,24.9 28.6,26.1 24,29.9 Z"
         fill="currentColor"
-        opacity="0.9"
       />
     </svg>
   );

@@ -16,6 +16,8 @@ export function FounderSection() {
             height={founder.image.height}
             sizes="(min-width: 1024px) 28rem, 100vw"
             className="aspect-square"
+            // Real photograph — drops the corner badge.
+            isPlaceholder={false}
           />
 
           <div>

@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design sources — the full-resolution masters live here and are far too large
+# to track (35 MB for the hero alone). Only the derived assets in public/media
+# ship. design/README.md records how to regenerate them from the masters.
+/design/*
+!/design/README.md
+
+# belt and braces: the hero masters arrive at the repo root before being filed
+# into design/hero/. Never let them slip into a commit from there.
+/before-hero.png
+/after-hero.png
+/hero-video.mp4
+/coordinator-with-couple.webp
+/pharmacy-pickup.webp

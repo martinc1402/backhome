@@ -1,5 +1,5 @@
 import { SiteHeader } from "@/components/site-header";
-import { Hero, HeroTrustBand } from "@/components/hero";
+import { Hero } from "@/components/hero";
 import { ScenariosSection } from "@/components/scenarios-section";
 import { ProcessSection } from "@/components/process-section";
 import { ServicesSection } from "@/components/services-section";
@@ -24,7 +24,6 @@ export default function Home() {
 
       <main id="main" className="flex-1">
         <Hero />
-        <HeroTrustBand />
         <ScenariosSection />
         <ProcessSection />
         <ServicesSection />

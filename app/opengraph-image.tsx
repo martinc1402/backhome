@@ -75,7 +75,7 @@ export default function OpengraphImage() {
             fontFamily: "sans-serif",
           }}
         >
-          Australia to Cebu pilot · Now inviting interest
+          Cebu pilot · Now inviting interest
         </div>
       </div>
     ),

@@ -62,14 +62,24 @@ export function SiteHeader() {
         ) : null}
 
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8 sm:py-5">
+          {/* The lockup is a single colour, so the colour is set once here and
+              both the mark and the wordmark inherit it — the mark's SVG is
+              drawn in currentColor. Forest rather than the header's own bark:
+              bark is the nav-link colour sitting right beside it, which would
+              flatten the logo into the navigation.
+
+              It carries its own transition because it now overrides the
+              header's inherited colour; without this the lockup would snap
+              between states while everything around it fades. */}
           <a
             href="#top"
-            className="flex shrink-0 items-center gap-2.5"
+            className={`flex shrink-0 items-center gap-2.5 motion-safe:transition-colors motion-safe:duration-300 ${
+              overHero ? "text-cream" : "text-forest"
+            }`}
             aria-label={`${site.name} — back to top`}
           >
-            <BackHomeMark
-              className={`h-7 w-7 ${overHero ? "text-lime" : "text-moss"}`}
-            />
+            {/* Height-sized, not square: the mark is portrait (22×31). */}
+            <BackHomeMark className="h-7 w-auto" />
             {/* PLACEHOLDER: text wordmark, pending a real logotype. */}
             <span className="font-serif text-[1.375rem] tracking-tight">
               {site.name}

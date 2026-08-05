@@ -6,11 +6,22 @@ import { Illustration } from "@/components/ui/illustration";
 export function ScenariosSection() {
   return (
     <Section tone="base">
-      <SectionHeading
-        heading={scenarios.heading}
-        intro={scenarios.intro}
-        align="center"
-      />
+      {/* Was a full-bleed lime band under the hero. Restated as a quiet line on
+          the cream field so lime stays an accent rather than a surface.
+          font-serif is explicit: type-h4 sets size only, and this is a <p>. */}
+      <p className="type-h4 mx-auto max-w-3xl text-center font-serif text-forest">
+        {scenarios.lead}
+      </p>
+
+      {/* Roughly the height the removed band occupied, so the rhythm between
+          the hero and this heading is unchanged. */}
+      <div className="mt-20 sm:mt-24">
+        <SectionHeading
+          heading={scenarios.heading}
+          intro={scenarios.intro}
+          align="center"
+        />
+      </div>
 
       <ul className="mt-16 grid gap-6 sm:grid-cols-2 lg:mt-20 lg:grid-cols-4">
         {scenarios.cards.map((card) => (

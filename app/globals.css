@@ -50,6 +50,20 @@
   --shadow-lift: 0 2px 4px rgb(12 49 10 / 0.04), 0 24px 56px -28px rgb(12 49 10 / 0.24);
 }
 
+/* The sweep angle of the hero pill's stroke. Registered at the top level, not
+   inside @layer/@media: @property is not a conditional rule and browsers have
+   historically disagreed about honouring it when nested.
+
+   Registration is what makes the value INTERPOLATE — an unregistered custom
+   property animates discretely, jumping at the 50% mark. initial-value is the
+   finished state so that where @property is unsupported the fallback is a
+   complete ring appearing slightly late, never a pill with no border at all. */
+@property --pill-sweep {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 360deg;
+}
+
 @layer base {
   html {
     /* Next 16 no longer overrides scroll-behavior during navigation; the
@@ -117,6 +131,27 @@
 
   .type-mega {
     font-size: clamp(4rem, 14vw, 9.25rem); /* → 148px */
+    line-height: 0.95;
+    letter-spacing: -0.026em;
+  }
+
+  /* Same scale, lower floor. For long unbreakable strings at mega size.
+
+     The footer runs the brand name at this size. "BackHome" sets about 4.66x
+     the font size wide, so at the 4rem floor it is 298px — wider than the
+     280px content box on a 320px screen, and the whole page scrolls sideways.
+     Nothing else can absorb that: it is one word, so it cannot wrap, and the
+     floor is flat below the 457px vw crossover, so it does not shrink either.
+
+     A 3rem floor puts it at 223px there, clear of the box even once a
+     scrollbar takes 15px. The floor stops binding above a 343px viewport, so
+     from most phones up this is identical to .type-mega — and above 457px the
+     two are the same value in any case.
+
+     .type-mega itself is unchanged: its other user is the 01/02/03 process
+     numerals, which are two characters wide and were never at risk. */
+  .type-mega-fluid {
+    font-size: clamp(3rem, 14vw, 9.25rem);
     line-height: 0.95;
     letter-spacing: -0.026em;
   }
@@ -194,5 +229,350 @@
   textarea.field-input {
     min-height: 7.5rem;
     resize: vertical;
+  }
+
+  /* ---- Hero directional scrim ---------------------------------------------
+     From md up the hero is a two-column composition: the illustration on the
+     left, the copy on the right. A flat wash would have to be dark enough for
+     the copy everywhere, which flattens the artwork into a single dark field.
+     So the tint is redistributed horizontally instead.
+
+     The ramp is expressed against --hero-split (set on the section in
+     hero.tsx), so the dark half always tracks wherever the copy column starts
+     — the two cannot fall out of sync. It reaches full strength 2% before the
+     copy does, which absorbs the section's horizontal padding.
+
+     72% is not a round number, it is measured. The right-hand side of this
+     footage is the brightest part of the frame (mean relative luminance 0.786
+     — a sunlit cream wall), so the copy column is the hardest place on the
+     page to put cream text.
+
+     The binding element is not the body copy but the 14px footnote: it is
+     text-cream/70, the lowest-contrast text in the hero. The body clears AA
+     from 64% up, so anyone tuning this against the paragraph alone will land
+     several points too light. Measured on the live render at the worst-case
+     viewport, sampling the true background under the glyph positions with the
+     text hidden:
+
+        right-side alpha    footnote (14px/70%)    body (18px/85%)
+              64%              4.46  x  (1024)          4.63
+              68%              4.37  x  (1920)          5.25
+              70%              4.61     (1920)          5.59
+              72%              4.89     (1920)          5.98
+
+     1920x1080 is the worst case rather than 1440: the taller hero puts the
+     footnote at 79% of its height instead of 84%, over brighter wall. 70%
+     clears the bar by only 0.11, so 72% is the first value with margin that
+     survives a re-grade or a brighter recut.
+
+     Visually 64% and 72% are near-indistinguishable here; the left-hand side
+     is what carries the perceived change in weight, and that stays at 18%.
+
+     18% on the left is the other half of the bargain: it drops the subject
+     from L 0.184 to 0.139, which reads as a gentle shade rather than a
+     blackout, so the hands and the phone stay clearly legible. Measured on the
+     live render, the subject region went from L 0.06 under the old flat scrim
+     to L 0.22 — roughly 3.6x brighter.
+
+     If the footage is recut, re-measure both ends — see design/README.md.
+  ------------------------------------------------------------------------- */
+
+  .hero-scrim-directional {
+    background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--color-forest) 18%, transparent) 0%,
+      color-mix(in srgb, var(--color-forest) 18%, transparent)
+        calc(var(--hero-split) - 21%),
+      color-mix(in srgb, var(--color-forest-deep) 72%, transparent)
+        calc(var(--hero-split) - 2%),
+      color-mix(in srgb, var(--color-forest-deep) 72%, transparent) 100%
+    );
+  }
+
+  /* ---- Hero eyebrow pill ---------------------------------------------------
+     Three separate behaviours, deliberately kept on three different elements
+     because two of them own `transform` and one element cannot run both:
+
+       .hero-pill          breathing scale        2s, infinite
+       .hero-pill::before  the stroke             draws once, then pulses
+       .hero-pill-content  the dot and the label  fades up once
+
+     Everything here is written so the BASE rules are the finished, static pill.
+     The animations only ever exist inside the no-preference query below, so
+     under prefers-reduced-motion: reduce the pill simply renders fully drawn
+     and still — same approach as the hero media motion section that follows.
+  ------------------------------------------------------------------------- */
+
+  .hero-pill {
+    position: relative;
+  }
+
+  /* The stroke is drawn by a pseudo-element rather than a border so the conic
+     gradient can be revealed progressively — a real border-color cannot
+     animate "around" a shape. */
+  .hero-pill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+
+    /* Declared HERE, not on .hero-pill. --pill-sweep is registered with
+       inherits: false, and a pseudo-element counts as a child for inheritance,
+       so a value set on the originating element never reaches it — it would
+       silently fall back to the initial-value instead. */
+    --pill-sweep: 360deg;
+
+    /* In a conic gradient 0deg points up and angles run clockwise, so
+       `from -90deg` starts the sweep at the LEFT edge — which is where the
+       lime dot sits, in both the centred and the left-aligned layout. The
+       stroke therefore appears to leave the dot and travel up over the top,
+       rather than unspooling from an arbitrary point above the label. Do not
+       "fix" this to 0deg; that is the top-centre start, which on a pill this
+       shape reads faintly like a progress spinner.
+
+       The hard `transparent 0` stop clamps to the preceding position, giving a
+       clean leading edge instead of a gradient smear.
+
+       38% rather than the 30% this pill shipped with: the ring spends most of
+       its cycle below full opacity (see pill-ring-pulse), and 38 × 0.8 lands
+       back on the original 30 at the trough. */
+    background: conic-gradient(
+      from -90deg,
+      color-mix(in oklab, var(--color-cream) 38%, transparent) var(--pill-sweep),
+      transparent 0
+    );
+
+    /* Standard gradient-border mask: fill the padding box, punch out the
+       content box, keep the 1px frame between them. Relies on the border-box
+       sizing Tailwind's preflight sets globally. */
+    padding: 1px;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes pill-draw {
+      from {
+        --pill-sweep: 0deg;
+      }
+      to {
+        --pill-sweep: 360deg;
+      }
+    }
+
+    /* Scale only — NOT opacity on the pill itself. Fading the whole element
+       would take the 12px label down with it twice every cycle, which reads as
+       a flicker rather than a breath. The opacity half of the pulse is carried
+       by the ring instead, where nothing has to stay legible. */
+    @keyframes pill-pulse {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.022);
+      }
+    }
+
+    @keyframes pill-ring-pulse {
+      0%,
+      100% {
+        opacity: 0.8;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes pill-content-in {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* 2.2% is about 4px of travel on a ~190px pill. Enough to register as
+       alive at the edge of vision, small enough that it never competes with
+       the headline. A symmetrical in-out curve rather than ease-in-out, which
+       is asymmetric and makes a looping breath feel like it is being tugged.
+
+       Starts after the draw-in has finished so the two never overlap. */
+    .hero-pill {
+      animation: pill-pulse 2s cubic-bezier(0.45, 0, 0.55, 1) 620ms infinite;
+    }
+
+    /* The copy column is centred below lg and left-aligned from lg up. Scaling
+       from the centre would swing the left edge ~2px in and out of the margin
+       the h1 and the paragraph below it share, which is exactly the sort of
+       wobble that reads as a bug on a left-aligned stack. */
+    @media (width >= 64rem) {
+      .hero-pill {
+        transform-origin: left center;
+      }
+    }
+
+    /* No fill mode on the draw: 100% already matches the base rule, so it
+       simply hands back to it. `backwards` is what holds the ring at 0deg for
+       frame one, before the first animation frame commits. */
+    .hero-pill::before {
+      animation:
+        pill-draw 420ms cubic-bezier(0.33, 0, 0.1, 1) backwards,
+        pill-ring-pulse 2s cubic-bezier(0.45, 0, 0.55, 1) 620ms infinite;
+    }
+
+    /* Overlaps the tail of the draw by ~120ms. Waiting for a clean handoff at
+       420ms leaves a visible dead beat in the middle of a 600ms sequence. */
+    .hero-pill-content {
+      animation: pill-content-in 320ms cubic-bezier(0.16, 1, 0.3, 1) 300ms
+        backwards;
+    }
+  }
+
+  /* ---- Hero media motion --------------------------------------------------
+     Both hero animations are declared INSIDE a no-preference query, so under
+     prefers-reduced-motion: reduce the rules simply do not exist and the hero
+     renders completely static. That is deliberately stronger than the
+     motion-safe: variant used elsewhere in this codebase, which still ships
+     the animation and relies on the variant winning the cascade.
+
+     They sit on two nested elements because one element cannot run two
+     animations that both own `transform`. See components/hero-media.tsx.
+  ------------------------------------------------------------------------- */
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes hero-drift {
+      from {
+        transform: scale(1);
+      }
+      to {
+        transform: scale(1.035);
+      }
+    }
+
+    /* Keeps the held final frame from reading as a stalled video. Linear
+       rather than eased: over 20s an ease-out visibly stalls and looks like a
+       bug.
+
+       Deliberately shallow — 3.5%, down from 6%. The drift crops as it zooms,
+       and the subject sits close enough to the left edge that a heavier zoom
+       visibly eats into the hands.
+
+       The origin sits on the subject rather than at the centre of the frame,
+       so the growth pushes outward into the empty wall on the right and the
+       hands stay put. Only ever scales UP: the section already has
+       overflow-hidden, so growing can never expose an edge. */
+    .hero-drift {
+      animation: hero-drift 20s linear forwards;
+      transform-origin: 26% 62%;
+      will-change: transform;
+    }
+
+    /* Dissolves the hero background as the reader scrolls into the page.
+       Driven by the compositor rather than a scroll listener, matching the
+       reasoning in site-header.tsx. Where it is unsupported nothing happens,
+       which is a fine outcome for a decorative effect.
+
+       scroll(root) rather than view(): the hero starts at the top of the
+       document, so view()'s entry phase never occurs and its ranges behave
+       counter-intuitively. The 70svh range matches the header's sentinel
+       height, so the media reaches solid forest exactly as the header flips to
+       cream — contrast only ever improves through the transition. */
+    @supports (animation-timeline: scroll()) {
+      @keyframes hero-scroll-fade {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-4rem);
+        }
+      }
+
+      .hero-scroll-fade {
+        animation: hero-scroll-fade linear both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 70svh;
+      }
+    }
+  }
+
+  /* ---- Scroll reveal ------------------------------------------------------
+     Used by the trust section's principles list. Both classes are added by JS
+     (components/ui/reveal-list.tsx), which gives two independent guards:
+
+       - no JS, or JS that fails: the markup carries neither class, so none of
+         these rules match and the list renders in its finished state. The
+         animation is never a prerequisite for the content being visible.
+       - prefers-reduced-motion: reduce: the observer is skipped, so the list
+         is never armed — AND these rules do not exist at all. Same belt-and
+         -braces approach as the hero media motion above.
+
+     Nothing here animates a property that affects layout: the icons keep their
+     box at every frame and the text moves with transform, so the list occupies
+     its final space from first paint and nothing reflows as items land.
+  ------------------------------------------------------------------------- */
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* JS sets pathLength="1" on every geometry element, which rescales the
+       dash units so one path length == 1 regardless of the real geometry. That
+       is what lets a single pair of values draw all four icons without
+       measuring each path with getTotalLength(). */
+    @keyframes reveal-draw {
+      from {
+        stroke-dashoffset: 1;
+      }
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes reveal-rise {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* Armed: the pre-animation state, held until the list scrolls into view. */
+    .reveal-armed > * :is(h3, p) {
+      opacity: 0;
+    }
+
+    /* 1.001 rather than 1 on the offset: at exactly 1 the zero-length dash can
+       still paint a round line-cap as a dot at the start of each path, which
+       reads as four grey specks sitting there before the draw begins. */
+    .reveal-armed > * :is(path, rect, circle, line, polyline, polygon) {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1.001;
+    }
+
+    /* --reveal-delay is set per item in the markup, so the stagger order is
+       reading order rather than anything derived here. `forwards` is what lets
+       the finished state win over the armed rules above. */
+    .reveal-in > * :is(h3, p) {
+      animation: reveal-rise 400ms cubic-bezier(0, 0, 0.2, 1)
+        var(--reveal-delay, 0ms) forwards;
+    }
+
+    .reveal-in > * :is(path, rect, circle, line, polyline, polygon) {
+      animation: reveal-draw 450ms cubic-bezier(0, 0, 0.2, 1)
+        var(--reveal-delay, 0ms) forwards;
+    }
   }
 }

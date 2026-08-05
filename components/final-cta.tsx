@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/ui/button";
 
 export function FinalCta() {
   return (
-    <Section tone="lime" compact>
+    <Section tone="sage" compact>
       <div className="mx-auto max-w-4xl text-center">
         <h2 className="type-h2 text-forest">{finalCta.heading}</h2>
         <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-forest/80">

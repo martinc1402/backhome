@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-type Tone = "base" | "cream" | "forest" | "lime";
+type Tone = "base" | "cream" | "forest" | "lime" | "sage";
 
 const toneClasses: Record<Tone, string> = {
   base: "bg-base text-bark",
@@ -8,6 +8,10 @@ const toneClasses: Record<Tone, string> = {
   // `on-dark` switches the global focus ring to lime so it stays visible.
   forest: "bg-forest text-cream on-dark",
   lime: "bg-lime text-forest",
+  // moss at the same 35% the process numerals use, which composites to ~#c1caaa
+  // over the base body background. Full-strength moss is far darker than it
+  // reads there (#57772e) — forest text on it is only 2.8:1.
+  sage: "bg-moss/35 text-forest",
 };
 
 type SectionProps = {

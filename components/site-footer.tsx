@@ -1,4 +1,5 @@
 import { footer, site } from "@/content/site";
+import { BackHomeMark } from "@/components/ui/icon";
 
 /**
  * Forest-green footer closing with an oversized wordmark, mirroring the
@@ -53,14 +54,28 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Oversized closing wordmark. Decorative: the accessible brand name
-            is already announced by the header link. */}
-        <p
+        {/* Oversized closing lockup. Decorative: the accessible brand name is
+            already announced by the header link.
+
+            type-mega-fluid sits on the WRAPPER, not just the wordmark, so the
+            mark's em-based height resolves against the same fluid clamp the
+            type does — one scale, no second set of breakpoints to keep in sync.
+
+            It is the -fluid variant rather than plain type-mega because
+            "BackHome" is one unbreakable word: at type-mega's 4rem floor it is
+            298px wide and overflowed a 320px screen. See globals.css.
+
+            Stacked below sm, inline above it. Not a stylistic choice: at 390px
+            the wordmark is already at its clamp floor (64px) and fills 298px of
+            the 335px container, so there is no room to put anything beside it
+            without overflowing the page. */}
+        <div
           aria-hidden="true"
-          className="type-mega mt-20 font-serif text-cream/90 select-none"
+          className="type-mega-fluid mt-20 flex flex-col items-start gap-4 text-cream/90 select-none sm:flex-row sm:items-baseline sm:gap-[0.1em]"
         >
-          {site.name}
-        </p>
+          <BackHomeMark className="h-[0.72em] w-auto shrink-0" />
+          <p className="type-mega-fluid font-serif">{site.name}</p>
+        </div>
 
         <div className="mt-10 flex flex-col gap-4 border-t border-cream/15 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-cream/65">
