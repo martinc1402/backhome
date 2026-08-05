@@ -1,39 +1,61 @@
 "use server";
 
+import { site } from "@/content/site";
+import { hashRequestIp } from "@/lib/hash-ip";
+import { supabaseAdmin } from "@/lib/supabase";
 import {
   errorSummary,
   parseInterestForm,
   validateInterest,
   type InterestFormState,
+  type InterestValues,
 } from "@/lib/validate-interest";
 
 /* ---------------------------------------------------------------------------
-   ██  TODO: WIRE UP REAL SUBMISSION HANDLING BEFORE LAUNCH  ██
+   Pilot interest submissions.
 
-   Right now this action validates the submission, logs it to the server
-   console and returns success. Nothing is persisted — if the site goes live
-   in this state, every expression of interest is lost.
+   Submissions are persisted to public.pilot_interest in Supabase through the
+   submit_pilot_interest() function, which performs the throttle check and the
+   insert in a single statement — see the SQL in that project. Doing both in one
+   round trip is what stops two simultaneous requests from each passing a
+   check-then-insert race.
 
-   Three things to add, in priority order:
+   STILL TODO BEFORE LAUNCH: notify the founders.
+     Nobody is told when a submission arrives; today you have to watch the
+     Supabase dashboard. Resend or Postmark, sending to site.contactEmail.
+     Send the applicant a confirmation too, since the success screen implies
+     one is coming.
 
-   1. PERSIST the submission.
-      Provision a database through the Vercel Marketplace (`vercel integration
-      add neon`) or point at Airtable / Google Sheets if the founders prefer to
-      read entries in a spreadsheet. Insert `values` in the marked block below.
-
-   2. NOTIFY the founders.
-      Resend or Postmark, sending to site.contactEmail in content/site.ts.
-      Send the confirmation to the applicant too, since the success screen
-      promises follow-up.
-
-   3. PROTECT the endpoint.
-      There is a honeypot below, which stops naive bots only. Add Vercel BotID
-      or an IP rate limit (Upstash) before this URL is public. Server Actions
-      are reachable by direct POST, so this is the only line of defence.
-
-   Store all credentials as environment variables (`vercel env add`), never in
-   this file.
+   Credentials live in environment variables (.env.local locally, `vercel env
+   add` for deployments), never in this file.
 --------------------------------------------------------------------------- */
+
+/** Max submissions per hashed IP per hour, enforced in Postgres. */
+const RATE_LIMIT_MESSAGE =
+  `You have already sent us a few messages in the last hour, so this one was ` +
+  `not saved. If something did not come through, email us at ` +
+  `${site.contactEmail} and we will pick it up from there.`;
+
+const FAILURE_MESSAGE =
+  `Something went wrong on our end and your details were not saved. Please ` +
+  `try again in a moment, or email us at ${site.contactEmail}.`;
+
+/**
+ * The throttle in submit_pilot_interest() signals refusal with
+ * `raise exception 'rate_limited'`. Match on the message rather than the
+ * SQLSTATE: a bare RAISE EXCEPTION is P0001 by default, so the code alone
+ * would also catch unrelated exceptions added to that function later.
+ */
+function isRateLimited(error: { message?: string | null }): boolean {
+  return (error.message ?? "").includes("rate_limited");
+}
+
+function failure(
+  message: string,
+  values: InterestValues,
+): InterestFormState {
+  return { status: "error", message, fieldErrors: {}, values };
+}
 
 export async function submitPilotInterest(
   _prevState: InterestFormState,
@@ -62,25 +84,39 @@ export async function submitPilotInterest(
   }
 
   try {
-    // ── REPLACE THIS BLOCK ────────────────────────────────────────────────
-    // e.g. await db.insert(pilotInterest).values({ ...values, createdAt: new Date() })
-    //      await resend.emails.send({ ... })
-    console.info("[BackHome] Pilot interest received (not persisted):", {
-      ...values,
-      submittedAt: new Date().toISOString(),
+    const { error } = await supabaseAdmin().rpc("submit_pilot_interest", {
+      p_full_name: values.fullName,
+      p_email: values.email,
+      p_phone: values.phone,
+      p_country: values.country,
+      p_cebu_location: values.cebuLocation,
+      p_who_you_help: values.whoYouHelp,
+      p_recent_situation: values.recentSituation,
+      p_first_service: values.firstService,
+      p_research_call: values.researchCall,
+      // validateInterest has already rejected anything but "on", so this is
+      // always true here — stored anyway as the record that consent was given.
+      p_consent: values.consent === "on",
+      p_ip_hash: await hashRequestIp(),
     });
-    // ── END REPLACE ───────────────────────────────────────────────────────
+
+    if (error) {
+      if (isRateLimited(error)) {
+        return failure(RATE_LIMIT_MESSAGE, values);
+      }
+
+      // Log the real reason server-side; show the visitor something useful.
+      console.error("[BackHome] Supabase rejected pilot interest:", error);
+      return failure(FAILURE_MESSAGE, values);
+    }
 
     return { status: "success" };
   } catch (error) {
+    // Thrown rather than returned: missing env vars, DNS, network. Reaching
+    // here means nothing was written, so it must never report success — the
+    // previous version of this file did exactly that, and lost the submission.
     console.error("[BackHome] Failed to record pilot interest:", error);
 
-    return {
-      status: "error",
-      message:
-        "Something went wrong on our end and your details were not saved. Please try again, or email us directly.",
-      fieldErrors: {},
-      values,
-    };
+    return failure(FAILURE_MESSAGE, values);
   }
 }

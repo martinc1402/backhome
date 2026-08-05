@@ -6,6 +6,25 @@ import { nav, site } from "@/content/site";
 import { ButtonLink } from "@/components/ui/button";
 import { BackHomeMark } from "@/components/ui/icon";
 
+type SiteHeaderProps = {
+  /**
+   * Set on pages that have no hero — the legal pages.
+   *
+   * Two things change, and both are bugs without it:
+   *
+   *   1. The sentinel below is pinned to top-0, so on a page with no hero it is
+   *      intersecting at scroll-top and the header would flip to its
+   *      transparent state: cream text on a cream page, invisible.
+   *   2. The logo points at #top and the nav at #how-it-works, which resolve to
+   *      nothing anywhere except the homepage. Standalone pages get absolute
+   *      paths so both actually navigate.
+   *
+   * Defaults to false, so <SiteHeader /> on the homepage takes every code path
+   * it did before this prop existed and renders identical markup.
+   */
+  standalone?: boolean;
+};
+
 /**
  * Fixed header that floats transparently over the dark hero image, then takes
  * a solid cream background once the hero has scrolled away.
@@ -17,11 +36,14 @@ import { BackHomeMark } from "@/components/ui/icon";
  * confirms the sentinel is visible. That way, if JavaScript never runs, the
  * header stays legible rather than rendering cream text on a cream page.
  */
-export function SiteHeader() {
+export function SiteHeader({ standalone = false }: SiteHeaderProps = {}) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [overHero, setOverHero] = useState(false);
 
   useEffect(() => {
+    // Nothing to observe on a standalone page: the header is permanently solid.
+    if (standalone) return;
+
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
@@ -32,16 +54,23 @@ export function SiteHeader() {
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, []);
+  }, [standalone]);
+
+  // Hash targets only exist on the homepage, so off it they need the path.
+  const homeHref = standalone ? "/" : "#top";
+  const hrefFor = (href: string) =>
+    standalone && href.startsWith("#") ? `/${href}` : href;
 
   return (
     <>
       {/* Sits just inside the hero; visible only while the hero is in view. */}
-      <div
-        ref={sentinelRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute top-0 h-[70svh] w-px"
-      />
+      {standalone ? null : (
+        <div
+          ref={sentinelRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 h-[70svh] w-px"
+        />
+      )}
 
       <header
         className={`fixed inset-x-0 top-0 z-50 motion-safe:transition-colors motion-safe:duration-300 ${
@@ -72,7 +101,7 @@ export function SiteHeader() {
               header's inherited colour; without this the lockup would snap
               between states while everything around it fades. */}
           <a
-            href="#top"
+            href={homeHref}
             className={`flex shrink-0 items-center gap-2.5 motion-safe:transition-colors motion-safe:duration-300 ${
               overHero ? "text-cream" : "text-forest"
             }`}
@@ -93,7 +122,7 @@ export function SiteHeader() {
             {nav.links.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={hrefFor(link.href)}
                 className="text-sm opacity-80 motion-safe:transition-opacity hover:opacity-100"
               >
                 {link.label}
@@ -102,7 +131,7 @@ export function SiteHeader() {
           </nav>
 
           <ButtonLink
-            href={nav.cta.href}
+            href={hrefFor(nav.cta.href)}
             variant={overHero ? "onDark" : "solid"}
             size="md"
           >

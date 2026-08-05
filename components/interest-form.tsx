@@ -337,7 +337,27 @@ export function InterestForm() {
           required
           error={fieldErrors.consent}
           label="I agree to be contacted about the BackHome pilot"
-          hint="We will only use your details to talk to you about the pilot. No marketing lists, and you can ask us to delete your details at any time."
+          hint={
+            <>
+              We will only use your details to talk to you about the pilot. No
+              marketing lists, and you can ask us to delete your details at any
+              time. See our{" "}
+              {/* Opens in a new tab deliberately: this sits mid-form, and a
+                  same-tab navigation would discard everything already typed —
+                  the form state is not persisted. The visually hidden note is
+                  what keeps that honest for screen reader users. */}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-ink underline decoration-bark/40 underline-offset-2 hover:decoration-ink"
+              >
+                Privacy Policy
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+              .
+            </>
+          }
         />
       </div>
 
@@ -433,7 +453,9 @@ type CheckboxProps = {
   formId: string;
   name: string;
   label: string;
-  hint?: string;
+  /** ReactNode, not string: the consent hint carries a link. Note the hint is
+      rendered OUTSIDE the <label>, so a link in it cannot toggle the box. */
+  hint?: React.ReactNode;
   required?: boolean;
   defaultChecked?: boolean;
   error?: string;

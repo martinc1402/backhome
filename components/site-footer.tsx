@@ -24,7 +24,6 @@ export function SiteFooter() {
             </h2>
             <p className="mt-4 text-cream/80">{site.serviceArea}</p>
             <p className="mt-5">
-              {/* PLACEHOLDER: replace with the real contact address. */}
               <a
                 href={`mailto:${site.contactEmail}`}
                 className="text-cream underline decoration-cream/30 underline-offset-4 hover:decoration-lime"

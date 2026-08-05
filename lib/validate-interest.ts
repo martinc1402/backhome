@@ -1,11 +1,14 @@
 /* ---------------------------------------------------------------------------
    Pilot interest form — field definitions and validation.
 
-   Deliberately dependency-free (no zod) so the project keeps a zero-dependency
-   footprint beyond Next itself. The same validator runs on the client for
-   immediate feedback and again inside the Server Action, which is mandatory:
-   Server Actions are reachable via direct POST requests, so client-side
-   validation can never be trusted.
+   Deliberately dependency-free (no zod). This module is imported by the client
+   form as well as the Server Action, so anything added here ships to the
+   browser — that is the reason for the rule, and it still holds even though the
+   project now carries @supabase/supabase-js for the server-side write.
+
+   The same validator runs on the client for immediate feedback and again inside
+   the Server Action, which is mandatory: Server Actions are reachable via
+   direct POST requests, so client-side validation can never be trusted.
 --------------------------------------------------------------------------- */
 
 export const SERVICE_OPTIONS = [

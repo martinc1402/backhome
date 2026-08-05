@@ -26,8 +26,7 @@ export type IconName =
 export const site = {
   name: "BackHome",
   tagline: "Trusted family support in Cebu",
-  // PLACEHOLDER: replace with the real contact address before launch.
-  contactEmail: "hello@backhome.example",
+  contactEmail: "hello@backhome.ph",
   serviceArea: "Cebu, Philippines",
 } as const;
 
@@ -306,9 +305,8 @@ export const footer = {
     "BackHome helps overseas Filipinos coordinate practical support for parents, relatives and homes in Cebu.",
   serviceAreaLabel: "Pilot service area",
   links: [
-    // PLACEHOLDER: point these at real policy pages before collecting live data.
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
   ],
   disclaimer:
     "BackHome is currently in pilot development. Services described are subject to change.",

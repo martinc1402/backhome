@@ -53,3 +53,10 @@ next-env.d.ts
 /hero-video.mp4
 /coordinator-with-couple.webp
 /pharmacy-pickup.webp
+
+# Local agent tooling — skill definitions and their lockfile. Not part of the
+# product, and they land in the repo root rather than a config dir, so they get
+# swept up by `git add -A` if not ignored.
+/.agents/
+/.claude/
+/skills-lock.json

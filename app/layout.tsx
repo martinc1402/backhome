@@ -21,10 +21,11 @@ const newsreader = Newsreader({
   axes: ["opsz"],
 });
 
-// PLACEHOLDER: replace with the real production domain before launch.
 // metadataBase is required by Next 16 before any relative openGraph.images
-// path — omitting it is a build error, not a warning.
-const siteUrl = "https://backhome.example";
+// path — omitting it is a build error, not a warning. It is also what the
+// canonical URLs on /privacy and /terms resolve against, so it has to be the
+// real domain now that those pages are set to index,follow.
+const siteUrl = "https://backhome.ph";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

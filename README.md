@@ -1,4 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BackHome
+
+Pilot interest landing page. Next.js App Router, Tailwind v4 (CSS-first, no
+config file), and a Supabase table behind the one form.
+
+## Environment variables
+
+The site builds and runs without these — every page is static except the
+interest form, which fails gracefully and tells the visitor their details were
+not saved. Set them before the form is any use.
+
+Create `.env.local` (gitignored via `.env*`):
+
+```sh
+# Supabase project URL, e.g. https://abcdefgh.supabase.co
+SUPABASE_URL=
+
+# The SECRET key (sb_secret_...), from Dashboard -> Project Settings -> API keys.
+# NOT the publishable key. This bypasses row level security and must never be
+# given a NEXT_PUBLIC_ prefix or imported from a Client Component.
+SUPABASE_SECRET_KEY=
+
+# Any long random string: `openssl rand -hex 32`. Salts the IP hash used for
+# rate limiting. Required — an unsalted hash of an IPv4 address is reversible
+# by brute force, so it would look like privacy without being it.
+IP_HASH_SALT=
+```
+
+For deployments, add the same three with `vercel env add`.
+
+## Database
+
+Run [`supabase/migrations/0001_pilot_interest.sql`](supabase/migrations/0001_pilot_interest.sql)
+once against the project (Dashboard -> SQL Editor). It creates
+`public.pilot_interest`, enables row level security with no policies — so the
+publishable key cannot read or write it — and installs the
+`submit_pilot_interest()` function that throttles and inserts in one statement.
 
 ## Getting Started
 
