@@ -1,8 +1,11 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+
 import { site } from "@/content/site";
 import { requireEnv } from "@/lib/env";
 import { isEmailConfigured, resendClient } from "@/lib/resend";
+import { supabaseAdmin } from "@/lib/supabase";
 import { type InterestValues } from "@/lib/validate-interest";
 
 /* ---------------------------------------------------------------------------
@@ -154,86 +157,218 @@ function applicantText(fullName: string): string {
   );
 }
 
+/** Which of the two emails a given attempt should try to send. */
+export type NotifyTargets = {
+  founder: boolean;
+  applicant: boolean;
+};
+
 /**
- * Sends both notification emails. Never throws.
- *
- * `submissionId` seeds the Resend idempotency keys. It is generated per action
- * invocation rather than taken from the database row, because
- * submit_pilot_interest() returns void — so it de-duplicates a retried Resend
- * call, NOT a genuinely re-submitted form. Changing the SQL function to return
- * its inserted id would make these keys stable across retries of the whole
- * action; that is a drop-and-recreate migration, so it has been left alone.
+ * What actually got through. A target that was not attempted comes back false,
+ * so `sent` is always "delivered to Resend on this attempt" and never "assumed
+ * fine because we did not try".
  */
-export async function notifyPilotInterest(
+export type NotifyOutcome = {
+  founderSent: boolean;
+  applicantSent: boolean;
+  error: string | null;
+};
+
+const NOTHING_ATTEMPTED: NotifyOutcome = {
+  founderSent: false,
+  applicantSent: false,
+  error: null,
+};
+
+/**
+ * Sends the requested notification emails. Never throws.
+ *
+ * `submissionId` seeds the Resend idempotency keys, which is why it must be the
+ * pilot_interest row id rather than a fresh value per attempt: the retry sweep
+ * re-sends with the same key, so a message Resend already accepted is not
+ * duplicated even when our record of it failed to save.
+ */
+export async function sendInterestEmails(
   values: InterestValues,
   submissionId: string,
-): Promise<void> {
+  targets: NotifyTargets,
+): Promise<NotifyOutcome> {
+  if (!targets.founder && !targets.applicant) {
+    return NOTHING_ATTEMPTED;
+  }
+
   if (!isEmailConfigured()) {
     console.warn(
       "[BackHome] Pilot interest saved, but no notification sent: set " +
         "RESEND_API_KEY and RESEND_FROM to enable email.",
     );
+    return { ...NOTHING_ATTEMPTED, error: "email not configured" };
+  }
+
+  let resend: ReturnType<typeof resendClient>;
+  let from: string;
+
+  try {
+    resend = resendClient();
+    from = requireEnv("RESEND_FROM");
+  } catch (error) {
+    // Missing env var or a malformed client. The row is already saved, and the
+    // sweep will pick it up again once configuration is fixed.
+    const message = describeError(error);
+    console.error(`[BackHome] Could not send pilot interest email: ${message}`);
+    return { ...NOTHING_ATTEMPTED, error: message };
+  }
+
+  // A dedicated inbox can be set with FOUNDER_EMAIL; otherwise the address
+  // already published on the site is the right default.
+  const founderTo = process.env.FOUNDER_EMAIL || site.contactEmail;
+
+  const jobs: Array<{
+    key: keyof NotifyTargets;
+    label: string;
+    run: () => Promise<{ error: unknown }>;
+  }> = [];
+
+  if (targets.founder) {
+    jobs.push({
+      key: "founder",
+      label: "founder alert",
+      run: () =>
+        resend.emails.send(
+          {
+            from,
+            to: founderTo,
+            // Lets the founders reply straight to the applicant from the alert.
+            replyTo: values.email,
+            subject: `New pilot interest — ${singleLine(values.fullName)}`,
+            html: founderHtml(values),
+            text: founderText(values),
+          },
+          { idempotencyKey: `pilot-interest/${submissionId}/founder` },
+        ),
+    });
+  }
+
+  if (targets.applicant) {
+    jobs.push({
+      key: "applicant",
+      label: "applicant confirmation",
+      run: () =>
+        resend.emails.send(
+          {
+            from,
+            to: values.email,
+            replyTo: site.contactEmail,
+            subject: `Thank you for your interest in the ${site.name} Cebu pilot`,
+            html: applicantHtml(values.fullName),
+            text: applicantText(values.fullName),
+          },
+          { idempotencyKey: `pilot-interest/${submissionId}/applicant` },
+        ),
+    });
+  }
+
+  // allSettled, not all: the applicant's confirmation failing (a typo'd or
+  // bouncing address, which is entirely likely) must not stop the founders
+  // being told that a submission arrived. That alert is the important one.
+  const results = await Promise.allSettled(jobs.map((job) => job.run()));
+
+  const outcome: NotifyOutcome = { ...NOTHING_ATTEMPTED };
+  const failures: string[] = [];
+
+  results.forEach((result, index) => {
+    const { key, label } = jobs[index];
+
+    // The SDK reports API failures in the resolved value rather than by
+    // throwing, so a fulfilled promise is not the same as an accepted email —
+    // both have to be unpacked or failures go unnoticed.
+    if (result.status === "rejected") {
+      const message = describeError(result.reason);
+      console.error(`[BackHome] ${label} threw: ${message}`);
+      failures.push(`${label}: ${message}`);
+      return;
+    }
+
+    if (result.value.error) {
+      const message = describeError(result.value.error);
+      console.error(`[BackHome] ${label} rejected by Resend: ${message}`);
+      failures.push(`${label}: ${message}`);
+      return;
+    }
+
+    if (key === "founder") {
+      outcome.founderSent = true;
+    } else {
+      outcome.applicantSent = true;
+    }
+  });
+
+  outcome.error = failures.length > 0 ? failures.join("; ") : null;
+  return outcome;
+}
+
+/**
+ * Persists what was delivered, so the sweep knows what is still outstanding.
+ *
+ * Never throws: failing to RECORD a send must not be mistaken for failing to
+ * SEND one. The cost of a lost record is one duplicate-suppressed retry on the
+ * next sweep, which the shared idempotency key already absorbs.
+ */
+export async function recordNotificationOutcome(
+  submissionId: string,
+  outcome: NotifyOutcome,
+): Promise<void> {
+  try {
+    const { error } = await supabaseAdmin().rpc("mark_notification_sent", {
+      p_id: submissionId,
+      p_founder: outcome.founderSent,
+      p_applicant: outcome.applicantSent,
+      p_error: outcome.error,
+    });
+
+    if (error) {
+      console.error(
+        `[BackHome] Could not record notification state for ${submissionId}: ` +
+          describeError(error),
+      );
+    }
+  } catch (error) {
+    console.error(
+      `[BackHome] Could not record notification state for ${submissionId}: ` +
+        describeError(error),
+    );
+  }
+}
+
+/**
+ * Sends both emails for a fresh submission and records the result.
+ *
+ * `submissionId` is null when submit_pilot_interest() did not return an id —
+ * which means migration 0002 has not been applied yet. Mail still goes out;
+ * only the bookkeeping is skipped, so an unmigrated deployment degrades to the
+ * previous best-effort behaviour rather than failing.
+ */
+export async function notifyPilotInterest(
+  values: InterestValues,
+  submissionId: string | null,
+): Promise<void> {
+  if (!submissionId) {
+    console.warn(
+      "[BackHome] submit_pilot_interest returned no id; sending without " +
+        "retry tracking. Apply supabase/migrations/0002_notification_state.sql.",
+    );
+
+    await sendInterestEmails(values, randomUUID(), {
+      founder: true,
+      applicant: true,
+    });
     return;
   }
 
-  try {
-    const resend = resendClient();
-    const from = requireEnv("RESEND_FROM");
+  const outcome = await sendInterestEmails(values, submissionId, {
+    founder: true,
+    applicant: true,
+  });
 
-    // A dedicated inbox can be set with FOUNDER_EMAIL; otherwise the address
-    // already published on the site is the right default.
-    const founderTo = process.env.FOUNDER_EMAIL || site.contactEmail;
-
-    // allSettled, not all: the applicant's confirmation failing (a typo'd or
-    // bouncing address, which is entirely likely) must not stop the founders
-    // being told that a submission arrived. That alert is the important one.
-    const results = await Promise.allSettled([
-      resend.emails.send(
-        {
-          from,
-          to: founderTo,
-          // Lets the founders reply straight to the applicant from the alert.
-          replyTo: values.email,
-          subject: `New pilot interest — ${singleLine(values.fullName)}`,
-          html: founderHtml(values),
-          text: founderText(values),
-        },
-        { idempotencyKey: `pilot-interest/${submissionId}/founder` },
-      ),
-      resend.emails.send(
-        {
-          from,
-          to: values.email,
-          replyTo: site.contactEmail,
-          subject: `Thank you for your interest in the ${site.name} Cebu pilot`,
-          html: applicantHtml(values.fullName),
-          text: applicantText(values.fullName),
-        },
-        { idempotencyKey: `pilot-interest/${submissionId}/applicant` },
-      ),
-    ]);
-
-    // The SDK reports API failures in the resolved value rather than by
-    // throwing, so a fulfilled promise is not the same as a delivered email —
-    // both have to be unpacked or failures go unnoticed.
-    const labels = ["founder alert", "applicant confirmation"] as const;
-
-    results.forEach((result, index) => {
-      if (result.status === "rejected") {
-        console.error(
-          `[BackHome] ${labels[index]} threw: ${describeError(result.reason)}`,
-        );
-      } else if (result.value.error) {
-        console.error(
-          `[BackHome] ${labels[index]} rejected by Resend: ` +
-            describeError(result.value.error),
-        );
-      }
-    });
-  } catch (error) {
-    // Missing env var, DNS, or a malformed client. The row is already saved.
-    console.error(
-      `[BackHome] Could not send pilot interest email: ${describeError(error)}`,
-    );
-  }
+  await recordNotificationOutcome(submissionId, outcome);
 }
