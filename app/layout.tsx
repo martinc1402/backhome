@@ -83,6 +83,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      // Browser extensions commonly stamp attributes onto <html> before React
+      // hydrates. This is scoped to this element only, so mismatches inside the
+      // app still surface.
+      suppressHydrationWarning
       // Next 16 no longer overrides scroll-behavior on navigation; this opts
       // the anchor navigation back into smooth scrolling.
       data-scroll-behavior="smooth"
