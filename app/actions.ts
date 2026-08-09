@@ -1,7 +1,11 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+import { after } from "next/server";
+
 import { site } from "@/content/site";
 import { hashRequestIp } from "@/lib/hash-ip";
+import { notifyPilotInterest } from "@/lib/notify-interest";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
   errorSummary,
@@ -20,11 +24,10 @@ import {
    round trip is what stops two simultaneous requests from each passing a
    check-then-insert race.
 
-   STILL TODO BEFORE LAUNCH: notify the founders.
-     Nobody is told when a submission arrives; today you have to watch the
-     Supabase dashboard. Resend or Postmark, sending to site.contactEmail.
-     Send the applicant a confirmation too, since the success screen implies
-     one is coming.
+   On success the founders are alerted and the applicant gets a confirmation,
+   both via Resend — see lib/notify-interest.ts. That happens in after(), so it
+   runs once the response has been sent: email latency never delays the success
+   screen, and a mail failure cannot turn a saved row into an error message.
 
    Credentials live in environment variables (.env.local locally, `vercel env
    add` for deployments), never in this file.
@@ -109,6 +112,11 @@ export async function submitPilotInterest(
       console.error("[BackHome] Supabase rejected pilot interest:", error);
       return failure(FAILURE_MESSAGE, values);
     }
+
+    // Only past the error check: notifying about a row that was never written
+    // would be worse than not notifying at all.
+    const submissionId = randomUUID();
+    after(() => notifyPilotInterest(values, submissionId));
 
     return { status: "success" };
   } catch (error) {
