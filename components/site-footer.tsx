@@ -64,13 +64,15 @@ export function SiteFooter() {
             "BackHome" is one unbreakable word: at type-mega's 4rem floor it is
             298px wide and overflowed a 320px screen. See globals.css.
 
-            Stacked below sm, inline above it. Not a stylistic choice: at 390px
-            the wordmark is already at its clamp floor (64px) and fills 298px of
-            the 335px container, so there is no room to put anything beside it
-            without overflowing the page. */}
+            Inline at every width. This used to stack below sm, back when the
+            floor was 4rem and the wordmark alone filled 298px of a 335px
+            container. Lowering the floor to 3rem made that guard obsolete and
+            it was left behind: measured at 320px — the narrowest phone worth
+            supporting — the mark, gap and wordmark need 247px of the 265px
+            available, and 284px of 335px at 390px. */}
         <div
           aria-hidden="true"
-          className="type-mega-fluid mt-20 flex flex-col items-start gap-4 text-cream/90 select-none sm:flex-row sm:items-baseline sm:gap-[0.1em]"
+          className="type-mega-fluid mt-20 flex items-baseline gap-[0.1em] text-cream/90 select-none"
         >
           <BackHomeMark className="h-[0.72em] w-auto shrink-0" />
           <p className="type-mega-fluid font-serif">{site.name}</p>
