@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 
 import { site } from "@/content/site";
@@ -87,7 +86,7 @@ export async function submitPilotInterest(
   }
 
   try {
-    const { error } = await supabaseAdmin().rpc("submit_pilot_interest", {
+    const { data, error } = await supabaseAdmin().rpc("submit_pilot_interest", {
       p_full_name: values.fullName,
       p_email: values.email,
       p_phone: values.phone,
@@ -115,7 +114,11 @@ export async function submitPilotInterest(
 
     // Only past the error check: notifying about a row that was never written
     // would be worse than not notifying at all.
-    const submissionId = randomUUID();
+    //
+    // submit_pilot_interest() returns the inserted id from migration 0002
+    // onward. Null means that migration has not been applied to this
+    // environment yet, which notifyPilotInterest degrades gracefully around.
+    const submissionId = typeof data === "string" ? data : null;
     after(() => notifyPilotInterest(values, submissionId));
 
     return { status: "success" };
