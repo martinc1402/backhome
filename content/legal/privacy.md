@@ -49,6 +49,8 @@ If you are that person, or you act for them, and you would like to know what we 
 
 When you visit our website we may collect standard technical information such as your IP address, browser type, device type, referring page, and pages viewed. We use this to understand how the site is used and to keep it working properly.
 
+When you submit the form we do not store your IP address. We store a one-way, salted hash of it, used only to limit how many submissions can come from one source in an hour so the form cannot be flooded; the salt is held outside the database, so the hash cannot be turned back into an address.
+
 ## 3. Why we collect it
 
 We use personal information to:
@@ -60,6 +62,8 @@ We use personal information to:
 - Understand which areas of Cebu and which kinds of care we should cover next
 - Improve our website
 - Meet our legal obligations
+
+When you submit the form we send you a confirmation email so you have a record that it reached us; it contains your name only, and none of the details you gave us about your parent.
 
 We do not sell personal information. We do not share it with advertisers.
 
@@ -78,7 +82,7 @@ Agreeing to a call is separate and optional. You can decline a call and still ha
 We may share personal information with:
 
 - **Service providers** who help us operate — for example email delivery, form handling, cloud hosting, and analytics. These providers act on our instructions.
-- **Local coordinators in the Philippines**, once services begin, and only to the extent needed to carry out a task you have asked for.
+- **Care homes, agencies and caregivers in Cebu** — but only once you have asked us to introduce you to a particular one, and only the details needed to make that introduction. We do not pass your details to a provider so they can approach you, and we will tell you before we share anything.
 - **Professional advisers** such as lawyers or accountants, where necessary.
 - **Government or law enforcement**, where we are required by law.
 
