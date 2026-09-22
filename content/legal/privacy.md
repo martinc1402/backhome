@@ -69,9 +69,9 @@ We only pass your details to a care home, agency or caregiver once you have chos
 
 We rely on your consent to contact you about BackHome. You gave that consent by ticking the relevant box on our form.
 
-You can withdraw it at any time by emailing us, or by using the unsubscribe link in any email we send. Withdrawing consent will not affect anything we did lawfully before you withdrew it.
+You can withdraw it at any time by replying to any email we send you, or by emailing us at the address in section 12. Withdrawing consent will not affect anything we did lawfully before you withdrew it.
 
-Agreeing to a research call is separate and optional. You can decline a call and still stay on our list.
+Agreeing to a call is separate and optional. You can decline a call and still have us send you care options.
 
 ## 5. Who we share information with
 

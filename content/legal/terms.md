@@ -32,7 +32,7 @@ You must be at least 18 years old.
 
 When you submit the form, you are telling us you may want to use BackHome in future and giving us permission to contact you about it.
 
-You can withdraw at any time by emailing us or using the unsubscribe link in any email.
+You can withdraw at any time by replying to any email we send you, or by emailing us.
 
 No payment is required to express interest, and we will not ask for payment details at this stage.
 
