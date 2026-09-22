@@ -100,7 +100,9 @@ function summaryRows(values: EnquiryValues): Array<[string, string]> {
  * attacker-controlled string that reaches the founders' mail client.
  */
 function situationHtml(situation: string): string {
-  const body = escapeHtml(situation).replace(/\n/g, "<br />");
+  // Browsers submit textarea content with CRLF, so match \r\n and lone \r
+  // too — matching \n alone leaves a stray \r sitting before each <br />.
+  const body = escapeHtml(situation).replace(/\r\n|\r|\n/g, "<br />");
 
   return (
     `<p style="margin:24px 0 6px;color:#5b5b55;font-size:14px;">` +
