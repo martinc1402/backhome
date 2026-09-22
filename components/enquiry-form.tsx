@@ -279,8 +279,8 @@ export function EnquiryForm() {
               Choose an area…
             </option>
             {PARENT_LOCATION_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -297,8 +297,8 @@ export function EnquiryForm() {
               Choose an option…
             </option>
             {CARE_TYPE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -318,8 +318,8 @@ export function EnquiryForm() {
           <select {...selectProps("careLevel")}>
             <option value="">Not specified</option>
             {CARE_LEVEL_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -336,8 +336,8 @@ export function EnquiryForm() {
               Choose an option…
             </option>
             {TIMING_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -353,8 +353,8 @@ export function EnquiryForm() {
           <select {...selectProps("budgetBand")}>
             <option value="">Not specified</option>
             {BUDGET_BAND_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>

@@ -4,6 +4,7 @@ import {
   CARE_TYPE_OPTIONS,
   PARENT_LOCATION_OPTIONS,
   TIMING_OPTIONS,
+  isOptionValue,
 } from "@/lib/enquiry-options";
 
 /* ---------------------------------------------------------------------------
@@ -62,10 +63,10 @@ export const initialEnquiryState: EnquiryFormState = { status: "idle" };
 /**
  * Per-field maximum lengths, also applied as maxLength in the markup.
  *
- * The select-backed fields are capped well above their longest option
- * ("Dementia or memory care", 23 characters) rather than at it: the cap is a
- * guard against a forged POST sending a megabyte, not a second validator. The
- * membership check below is what actually constrains them.
+ * The select-backed fields hold slugs, not labels, and are capped well above
+ * the longest of them ("dementia_or_memory_care", 23 characters) rather than
+ * at it: the cap is a guard against a forged POST sending a megabyte, not a
+ * second validator. The membership check below is what constrains them.
  */
 export const MAX_LENGTH: Record<FieldName, number> = {
   fullName: 120,
@@ -90,18 +91,6 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
 function read(formData: FormData, name: string): string {
   const value = formData.get(name);
   return typeof value === "string" ? value.trim() : "";
-}
-
-/**
- * Membership test against one of the option lists.
- *
- * Takes `readonly string[]` rather than the literal tuple type so the `as const`
- * arrays widen on the way in and `.includes(string)` is legal under `strict`.
- * The previous form cast the value to the option union instead, which would
- * have silently accepted a wrong-typed value had one ever been passed.
- */
-function isOption(options: readonly string[], value: string): boolean {
-  return options.includes(value);
 }
 
 /** Normalises raw FormData into a trimmed, length-capped value object. */
@@ -142,29 +131,29 @@ export function validateEnquiry(values: EnquiryValues): FieldErrors {
 
   if (!values.parentLocation) {
     errors.parentLocation = "Please tell us where in Cebu your parent is.";
-  } else if (!isOption(PARENT_LOCATION_OPTIONS, values.parentLocation)) {
+  } else if (!isOptionValue(PARENT_LOCATION_OPTIONS, values.parentLocation)) {
     errors.parentLocation = "Please choose one of the listed areas.";
   }
 
   if (!values.careType) {
     errors.careType = "Please choose the type of care you are looking for.";
-  } else if (!isOption(CARE_TYPE_OPTIONS, values.careType)) {
+  } else if (!isOptionValue(CARE_TYPE_OPTIONS, values.careType)) {
     errors.careType = "Please choose one of the listed options.";
   }
 
   // Optional, but a value that IS present must be one of ours — otherwise the
   // CHECK constraint rejects it in Postgres, after the visitor saw a success.
-  if (values.careLevel && !isOption(CARE_LEVEL_OPTIONS, values.careLevel)) {
+  if (values.careLevel && !isOptionValue(CARE_LEVEL_OPTIONS, values.careLevel)) {
     errors.careLevel = "Please choose one of the listed care levels.";
   }
 
   if (!values.timing) {
     errors.timing = "Please tell us how soon care is needed.";
-  } else if (!isOption(TIMING_OPTIONS, values.timing)) {
+  } else if (!isOptionValue(TIMING_OPTIONS, values.timing)) {
     errors.timing = "Please choose one of the listed options.";
   }
 
-  if (values.budgetBand && !isOption(BUDGET_BAND_OPTIONS, values.budgetBand)) {
+  if (values.budgetBand && !isOptionValue(BUDGET_BAND_OPTIONS, values.budgetBand)) {
     errors.budgetBand = "Please choose one of the listed budget ranges.";
   }
 

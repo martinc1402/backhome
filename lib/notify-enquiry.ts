@@ -4,6 +4,14 @@ import { randomUUID } from "node:crypto";
 
 import { site } from "@/content/site";
 import { requireEnv } from "@/lib/env";
+import {
+  BUDGET_BAND_OPTIONS,
+  CARE_LEVEL_OPTIONS,
+  CARE_TYPE_OPTIONS,
+  PARENT_LOCATION_OPTIONS,
+  TIMING_OPTIONS,
+  labelFor,
+} from "@/lib/enquiry-options";
 import { describeError } from "@/lib/log-safe";
 import { isEmailConfigured, resendClient } from "@/lib/resend";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -66,6 +74,12 @@ const NOT_SPECIFIED = "Not specified";
 /**
  * Field order and labels for the founder alert.
  *
+ * The five select-backed fields hold slugs, so every one is resolved back to
+ * its label here — an alert reading "bedridden_or_high_care" would be a worse
+ * version of the thing this email exists to deliver. labelFor falls back to the
+ * raw slug if it is no longer listed, so a retired option degrades to something
+ * readable rather than a blank cell.
+ *
  * `situation` is deliberately NOT here: it is free text, often several
  * paragraphs, and the table cells below are single-line. It gets its own block
  * under the table instead — see founderHtml.
@@ -81,11 +95,21 @@ function summaryRows(values: EnquiryValues): Array<[string, string]> {
     ["Email", values.email],
     ["Phone / WhatsApp", values.phone || NOT_PROVIDED],
     ["Lives in", values.country],
-    ["Parent is in", values.parentLocation],
-    ["Looking for", values.careType],
-    ["Level of care", values.careLevel || NOT_SPECIFIED],
-    ["Timing", values.timing],
-    ["Monthly budget", values.budgetBand || NOT_SPECIFIED],
+    ["Parent is in", labelFor(PARENT_LOCATION_OPTIONS, values.parentLocation)],
+    ["Looking for", labelFor(CARE_TYPE_OPTIONS, values.careType)],
+    [
+      "Level of care",
+      values.careLevel
+        ? labelFor(CARE_LEVEL_OPTIONS, values.careLevel)
+        : NOT_SPECIFIED,
+    ],
+    ["Timing", labelFor(TIMING_OPTIONS, values.timing)],
+    [
+      "Monthly budget",
+      values.budgetBand
+        ? labelFor(BUDGET_BAND_OPTIONS, values.budgetBand)
+        : NOT_SPECIFIED,
+    ],
     ["Open to a call", values.openToCall ? "Yes" : "No"],
   ];
 }
@@ -279,7 +303,8 @@ export async function sendEnquiryEmails(
             // list without opening the mail — which is the whole reason for
             // asking about timing at all.
             subject:
-              `New care enquiry (${singleLine(values.timing)}) — ` +
+              `New care enquiry ` +
+              `(${singleLine(labelFor(TIMING_OPTIONS, values.timing))}) — ` +
               `${singleLine(values.fullName)}`,
             html: founderHtml(values),
             text: founderText(values),

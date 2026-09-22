@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "options:md5": "node scripts/options-md5.mjs"
+    "verify:schema": "node --experimental-strip-types scripts/verify-schema.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",
