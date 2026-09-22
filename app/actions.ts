@@ -4,29 +4,35 @@ import { after } from "next/server";
 
 import { site } from "@/content/site";
 import { hashRequestIp } from "@/lib/hash-ip";
-import { notifyPilotInterest } from "@/lib/notify-interest";
+import { describeDbError, describeError } from "@/lib/log-safe";
+import { notifyCareEnquiry } from "@/lib/notify-enquiry";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
   errorSummary,
-  parseInterestForm,
-  validateInterest,
-  type InterestFormState,
-  type InterestValues,
-} from "@/lib/validate-interest";
+  parseEnquiryForm,
+  validateEnquiry,
+  type EnquiryFormState,
+  type EnquiryValues,
+} from "@/lib/validate-enquiry";
 
 /* ---------------------------------------------------------------------------
-   Pilot interest submissions.
+   Care enquiry submissions.
 
-   Submissions are persisted to public.pilot_interest in Supabase through the
-   submit_pilot_interest() function, which performs the throttle check and the
-   insert in a single statement — see the SQL in that project. Doing both in one
-   round trip is what stops two simultaneous requests from each passing a
-   check-then-insert race.
+   Submissions are persisted to public.care_enquiries in Supabase through the
+   submit_care_enquiry() function, which performs the consent check, the
+   throttle check and the insert in a single statement — see
+   supabase/care_enquiries.sql. Doing them in one round trip is what stops two
+   simultaneous requests from each passing a check-then-insert race.
 
-   On success the founders are alerted and the applicant gets a confirmation,
-   both via Resend — see lib/notify-interest.ts. That happens in after(), so it
+   On success the founders are alerted and the enquirer gets a confirmation,
+   both via Resend — see lib/notify-enquiry.ts. That happens in after(), so it
    runs once the response has been sent: email latency never delays the success
    screen, and a mail failure cannot turn a saved row into an error message.
+
+   NOTHING in this file may log a field value. The enquiry carries a parent's
+   care level and free text about a family's circumstances; only the outcome and
+   the row id belong in the logs. That is why both error paths go through
+   lib/log-safe.ts rather than passing the error straight to console.error.
 
    Credentials live in environment variables (.env.local locally, `vercel env
    add` for deployments), never in this file.
@@ -43,37 +49,38 @@ const FAILURE_MESSAGE =
   `try again in a moment, or email us at ${site.contactEmail}.`;
 
 /**
- * The throttle in submit_pilot_interest() signals refusal with
+ * The throttle in submit_care_enquiry() signals refusal with
  * `raise exception 'rate_limited'`. Match on the message rather than the
  * SQLSTATE: a bare RAISE EXCEPTION is P0001 by default, so the code alone
- * would also catch unrelated exceptions added to that function later.
+ * would also catch the consent guard in the same function.
+ *
+ * Note this READS error.message, which describeDbError deliberately withholds
+ * from the logs. Reading it here is fine — emitting it is the prohibited act.
+ * Do not "fix" the inconsistency by logging what this matches on.
  */
 function isRateLimited(error: { message?: string | null }): boolean {
   return (error.message ?? "").includes("rate_limited");
 }
 
-function failure(
-  message: string,
-  values: InterestValues,
-): InterestFormState {
+function failure(message: string, values: EnquiryValues): EnquiryFormState {
   return { status: "error", message, fieldErrors: {}, values };
 }
 
-export async function submitPilotInterest(
-  _prevState: InterestFormState,
+export async function submitCareEnquiry(
+  _prevState: EnquiryFormState,
   formData: FormData,
-): Promise<InterestFormState> {
+): Promise<EnquiryFormState> {
   // Honeypot: a real person never sees or fills this field. Return success so
   // a bot cannot distinguish a rejection from an accepted submission.
   if (typeof formData.get("website") === "string" && formData.get("website")) {
     return { status: "success" };
   }
 
-  const values = parseInterestForm(formData);
+  const values = parseEnquiryForm(formData);
 
-  // Re-validate on the server. The client runs the same checks, but Server
-  // Actions accept direct POST requests, so client validation is not a control.
-  const fieldErrors = validateInterest(values);
+  // Re-validate on the server. The browser's required attributes are not a
+  // control: Server Actions accept direct POST requests.
+  const fieldErrors = validateEnquiry(values);
 
   if (Object.keys(fieldErrors).length > 0) {
     return {
@@ -86,18 +93,23 @@ export async function submitPilotInterest(
   }
 
   try {
-    const { data, error } = await supabaseAdmin().rpc("submit_pilot_interest", {
+    const { data, error } = await supabaseAdmin().rpc("submit_care_enquiry", {
       p_full_name: values.fullName,
       p_email: values.email,
       p_phone: values.phone,
       p_country: values.country,
-      p_cebu_location: values.cebuLocation,
-      p_who_you_help: values.whoYouHelp,
-      p_recent_situation: values.recentSituation,
-      p_first_service: values.firstService,
-      p_research_call: values.researchCall,
-      // validateInterest has already rejected anything but "on", so this is
-      // always true here — stored anyway as the record that consent was given.
+      p_parent_location: values.parentLocation,
+      p_care_type: values.careType,
+      // Optional selects arrive as "" when skipped; nullif() inside the
+      // function turns that into NULL. A chosen "Not sure" is a real value.
+      p_care_level: values.careLevel,
+      p_timing: values.timing,
+      p_budget_band: values.budgetBand,
+      p_situation: values.situation,
+      p_open_to_call: values.openToCall,
+      // validateEnquiry has already rejected anything but "on", and the
+      // function rejects a false a third time — stored as the record that
+      // consent was given.
       p_consent: values.consent === "on",
       p_ip_hash: await hashRequestIp(),
     });
@@ -107,26 +119,43 @@ export async function submitPilotInterest(
         return failure(RATE_LIMIT_MESSAGE, values);
       }
 
-      // Log the real reason server-side; show the visitor something useful.
-      console.error("[BackHome] Supabase rejected pilot interest:", error);
+      // A check violation here is a deploy bug, not a visitor mistake: the
+      // option lists in lib/enquiry-options.ts have drifted from the CHECK
+      // constraints, so one option is unsubmittable. Its own line, because
+      // nothing else in the codebase produces this string and it is worth
+      // alerting on. describeDbError names the constraint and nothing else.
+      if (error.code === "23514") {
+        console.error(
+          `[BackHome] care_enquiries CHECK rejected a valid-looking submission ` +
+            `— option lists have drifted from the constraints: ` +
+            describeDbError(error),
+        );
+      } else {
+        console.error(
+          `[BackHome] Supabase rejected care enquiry: ${describeDbError(error)}`,
+        );
+      }
+
       return failure(FAILURE_MESSAGE, values);
     }
 
     // Only past the error check: notifying about a row that was never written
     // would be worse than not notifying at all.
-    //
-    // submit_pilot_interest() returns the inserted id from migration 0002
-    // onward. Null means that migration has not been applied to this
-    // environment yet, which notifyPilotInterest degrades gracefully around.
     const submissionId = typeof data === "string" ? data : null;
-    after(() => notifyPilotInterest(values, submissionId));
+    after(() => notifyCareEnquiry(values, submissionId));
 
     return { status: "success" };
   } catch (error) {
     // Thrown rather than returned: missing env vars, DNS, network. Reaching
-    // here means nothing was written, so it must never report success — the
-    // previous version of this file did exactly that, and lost the submission.
-    console.error("[BackHome] Failed to record pilot interest:", error);
+    // here means nothing was written, so it must never report success — an
+    // earlier version of this file did exactly that, and lost the submission.
+    //
+    // describeError, not the raw object: these values do not carry the payload
+    // today, but "no raw error object reaches console in the submit path" is a
+    // rule worth being able to state without qualification.
+    console.error(
+      `[BackHome] Failed to record care enquiry: ${describeError(error)}`,
+    );
 
     return failure(FAILURE_MESSAGE, values);
   }

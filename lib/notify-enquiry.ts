@@ -4,24 +4,29 @@ import { randomUUID } from "node:crypto";
 
 import { site } from "@/content/site";
 import { requireEnv } from "@/lib/env";
+import { describeError } from "@/lib/log-safe";
 import { isEmailConfigured, resendClient } from "@/lib/resend";
 import { supabaseAdmin } from "@/lib/supabase";
-import { type InterestValues } from "@/lib/validate-interest";
+import { type EnquiryValues } from "@/lib/validate-enquiry";
 
 /* ---------------------------------------------------------------------------
-   Notification email for pilot interest submissions.
+   Notification email for care enquiry submissions.
 
    Two messages per submission:
-     - an alert to the founders, so a submission is not something you have to
-       go looking for in the Supabase dashboard;
-     - a confirmation to the applicant, because the success screen already
-       promises "we will be in touch" and an empty inbox undercuts that.
+     - an alert to the founders, so an enquiry is not something you have to go
+       looking for in the Supabase dashboard;
+     - a confirmation to the enquirer, because the success screen already
+       promises "we will reply personally" and an empty inbox undercuts that.
 
    NOTHING IN HERE MAY BREAK A SUBMISSION. By the time this runs the row is
    already committed, so a failed send must never surface as "your details were
    not saved" — that would be a lie that also makes people submit twice. Every
    path is caught and logged; the caller runs it inside after() so it is not
    even on the response path. See app/actions.ts.
+
+   The founder alert carries the parent's care level and the free-text
+   situation. That is the point of the alert and it goes to a controlled inbox.
+   The enquirer's confirmation carries NEITHER — see applicantHtml.
 --------------------------------------------------------------------------- */
 
 const HTML_ESCAPES: Record<string, string> = {
@@ -37,8 +42,8 @@ const HTML_ESCAPES: Record<string, string> = {
  *
  * Not optional. Every field below is free text typed by an anonymous visitor,
  * and it lands in the founders' mail client — which renders HTML. Without this,
- * `recent_situation` is a straightforward injection point into an email the
- * founders are expected to trust.
+ * `situation` is a straightforward injection point into an email the founders
+ * are expected to trust.
  */
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char]);
@@ -53,47 +58,59 @@ function singleLine(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
-/**
- * Renders an unknown thrown/returned value as a readable line.
- *
- * Passing the raw value to console.error is not enough: Error instances and the
- * SDK's error objects carry non-enumerable properties, so they serialise to a
- * bare `{}` in structured logs — which is exactly as useful as no log at all.
- */
-function describeError(error: unknown): string {
-  if (error instanceof Error) {
-    return `${error.name}: ${error.message}`;
-  }
-
-  if (error && typeof error === "object") {
-    const { name, message } = error as { name?: string; message?: string };
-
-    if (name || message) {
-      return `${name ?? "Error"}: ${message ?? "(no message)"}`;
-    }
-  }
-
-  return String(error);
-}
-
+/** A text field the visitor left blank. */
 const NOT_PROVIDED = "Not provided";
+/** A select the visitor did not answer — distinct from choosing "Not sure". */
+const NOT_SPECIFIED = "Not specified";
 
-/** Field order and labels for the founder alert. */
-function summaryRows(values: InterestValues): Array<[string, string]> {
+/**
+ * Field order and labels for the founder alert.
+ *
+ * `situation` is deliberately NOT here: it is free text, often several
+ * paragraphs, and the table cells below are single-line. It gets its own block
+ * under the table instead — see founderHtml.
+ *
+ * Two different placeholders on purpose. "Not provided" means a text field was
+ * left blank; "Not specified" means a select was skipped. For care level that
+ * distinction matters: choosing "Not sure" is a real answer about the parent,
+ * skipping the question is not, and flattening them loses a triage signal.
+ */
+function summaryRows(values: EnquiryValues): Array<[string, string]> {
   return [
     ["Name", values.fullName],
     ["Email", values.email],
     ["Phone / WhatsApp", values.phone || NOT_PROVIDED],
     ["Lives in", values.country],
-    ["Family or property in", values.cebuLocation],
-    ["Who they help", values.whoYouHelp],
-    ["Recent difficult situation", values.recentSituation || NOT_PROVIDED],
-    ["Would use first", values.firstService],
-    ["Open to a research call", values.researchCall ? "Yes" : "No"],
+    ["Parent is in", values.parentLocation],
+    ["Looking for", values.careType],
+    ["Level of care", values.careLevel || NOT_SPECIFIED],
+    ["Timing", values.timing],
+    ["Monthly budget", values.budgetBand || NOT_SPECIFIED],
+    ["Open to a call", values.openToCall ? "Yes" : "No"],
   ];
 }
 
-function founderHtml(values: InterestValues): string {
+/**
+ * The free-text answer, as its own block.
+ *
+ * escapeHtml FIRST, then newlines to <br />. That order is load-bearing:
+ * escaping after the replace would turn the tags we just inserted into visible
+ * text, and the obvious "fix" for that is to stop escaping — which reopens the
+ * injection this function exists to prevent. `situation` is the largest
+ * attacker-controlled string that reaches the founders' mail client.
+ */
+function situationHtml(situation: string): string {
+  const body = escapeHtml(situation).replace(/\n/g, "<br />");
+
+  return (
+    `<p style="margin:24px 0 6px;color:#5b5b55;font-size:14px;">` +
+    `What is happening right now</p>` +
+    `<p style="margin:0;padding:12px 16px;background:#f7f5ee;border-radius:8px;` +
+    `color:#1c1c19;font-size:14px;line-height:1.6;">${body}</p>`
+  );
+}
+
+function founderHtml(values: EnquiryValues): string {
   const rows = summaryRows(values)
     .map(
       ([label, value]) =>
@@ -110,35 +127,51 @@ function founderHtml(values: InterestValues): string {
     `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;` +
     `max-width:560px;">` +
     `<h2 style="font-size:18px;margin:0 0 4px;color:#0c310a;">` +
-    `New pilot interest</h2>` +
+    `New care enquiry</h2>` +
     `<p style="margin:0 0 20px;color:#5b5b55;font-size:14px;">` +
     `Reply to this email to reach ${escapeHtml(values.fullName)} directly.</p>` +
     `<table cellpadding="0" cellspacing="0" role="presentation">${rows}</table>` +
+    // Omitted entirely when blank: a heading over "Not provided" is noise.
+    `${values.situation ? situationHtml(values.situation) : ""}` +
     `</div>`
   );
 }
 
-function founderText(values: InterestValues): string {
+function founderText(values: EnquiryValues): string {
   const rows = summaryRows(values)
     .map(([label, value]) => `${label}: ${value}`)
     .join("\n");
 
-  return `New pilot interest\n\n${rows}\n`;
+  const situation = values.situation
+    ? `\nWhat is happening right now:\n${values.situation}\n`
+    : "";
+
+  return `New care enquiry\n\n${rows}\n${situation}`;
 }
 
+/*
+ * The enquirer's confirmation takes ONLY the name — deliberately.
+ *
+ * That address is unverified: it is whatever was typed into the form, and it is
+ * frequently mistyped or shared within a household. Echoing the care level
+ * ("Dementia or memory care") or the situation text back to it would mail
+ * health-adjacent detail about a third party — the parent, who never filled in
+ * anything — to an inbox nobody has confirmed. The founder alert goes to a
+ * controlled address; this does not.
+ */
 function applicantHtml(fullName: string): string {
   return (
     `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;` +
     `max-width:560px;color:#1c1c19;">` +
     `<p style="font-size:15px;">Hi ${escapeHtml(fullName)},</p>` +
-    `<p style="font-size:15px;line-height:1.6;">Thank you for expressing ` +
-    `interest in the ${site.name} Cebu pilot. We have your details.</p>` +
-    `<p style="font-size:15px;line-height:1.6;">We will be in touch as the ` +
-    `pilot takes shape. If you offered a short research call, we may reach out ` +
-    `to hear more about your situation.</p>` +
-    `<p style="font-size:15px;line-height:1.6;">Nothing is committed and no ` +
-    `payment is required. If you would like your details removed, just reply ` +
-    `to this email and we will delete them.</p>` +
+    `<p style="font-size:15px;line-height:1.6;">Thank you for telling us about ` +
+    `your parent. We have your details.</p>` +
+    `<p style="font-size:15px;line-height:1.6;">We will send verified care ` +
+    `options as we confirm them, and we will reply personally. If you asked for ` +
+    `a call, we will suggest a time.</p>` +
+    `<p style="font-size:15px;line-height:1.6;">There is no cost to families ` +
+    `and no payment is required. If you would like your details removed, just ` +
+    `reply to this email and we will delete them.</p>` +
     `<p style="font-size:15px;">— The ${site.name} team</p>` +
     `</div>`
   );
@@ -147,12 +180,12 @@ function applicantHtml(fullName: string): string {
 function applicantText(fullName: string): string {
   return (
     `Hi ${fullName},\n\n` +
-    `Thank you for expressing interest in the ${site.name} Cebu pilot. We have ` +
-    `your details.\n\n` +
-    `We will be in touch as the pilot takes shape. If you offered a short ` +
-    `research call, we may reach out to hear more about your situation.\n\n` +
-    `Nothing is committed and no payment is required. If you would like your ` +
-    `details removed, just reply to this email and we will delete them.\n\n` +
+    `Thank you for telling us about your parent. We have your details.\n\n` +
+    `We will send verified care options as we confirm them, and we will reply ` +
+    `personally. If you asked for a call, we will suggest a time.\n\n` +
+    `There is no cost to families and no payment is required. If you would ` +
+    `like your details removed, just reply to this email and we will delete ` +
+    `them.\n\n` +
     `— The ${site.name} team\n`
   );
 }
@@ -184,12 +217,12 @@ const NOTHING_ATTEMPTED: NotifyOutcome = {
  * Sends the requested notification emails. Never throws.
  *
  * `submissionId` seeds the Resend idempotency keys, which is why it must be the
- * pilot_interest row id rather than a fresh value per attempt: the retry sweep
+ * care_enquiries row id rather than a fresh value per attempt: the retry sweep
  * re-sends with the same key, so a message Resend already accepted is not
  * duplicated even when our record of it failed to save.
  */
-export async function sendInterestEmails(
-  values: InterestValues,
+export async function sendEnquiryEmails(
+  values: EnquiryValues,
   submissionId: string,
   targets: NotifyTargets,
 ): Promise<NotifyOutcome> {
@@ -199,7 +232,7 @@ export async function sendInterestEmails(
 
   if (!isEmailConfigured()) {
     console.warn(
-      "[BackHome] Pilot interest saved, but no notification sent: set " +
+      "[BackHome] Care enquiry saved, but no notification sent: set " +
         "RESEND_API_KEY and RESEND_FROM to enable email.",
     );
     return { ...NOTHING_ATTEMPTED, error: "email not configured" };
@@ -215,7 +248,7 @@ export async function sendInterestEmails(
     // Missing env var or a malformed client. The row is already saved, and the
     // sweep will pick it up again once configuration is fixed.
     const message = describeError(error);
-    console.error(`[BackHome] Could not send pilot interest email: ${message}`);
+    console.error(`[BackHome] Could not send care enquiry email: ${message}`);
     return { ...NOTHING_ATTEMPTED, error: message };
   }
 
@@ -238,13 +271,18 @@ export async function sendInterestEmails(
           {
             from,
             to: founderTo,
-            // Lets the founders reply straight to the applicant from the alert.
+            // Lets the founders reply straight to the enquirer from the alert.
             replyTo: values.email,
-            subject: `New pilot interest — ${singleLine(values.fullName)}`,
+            // Timing goes in the subject so "Urgently" is visible in the inbox
+            // list without opening the mail — which is the whole reason for
+            // asking about timing at all.
+            subject:
+              `New care enquiry (${singleLine(values.timing)}) — ` +
+              `${singleLine(values.fullName)}`,
             html: founderHtml(values),
             text: founderText(values),
           },
-          { idempotencyKey: `pilot-interest/${submissionId}/founder` },
+          { idempotencyKey: `care-enquiry/${submissionId}/founder` },
         ),
     });
   }
@@ -252,25 +290,25 @@ export async function sendInterestEmails(
   if (targets.applicant) {
     jobs.push({
       key: "applicant",
-      label: "applicant confirmation",
+      label: "enquirer confirmation",
       run: () =>
         resend.emails.send(
           {
             from,
             to: values.email,
             replyTo: site.contactEmail,
-            subject: `Thank you for your interest in the ${site.name} Cebu pilot`,
+            subject: `Thank you — ${site.name} has your details`,
             html: applicantHtml(values.fullName),
             text: applicantText(values.fullName),
           },
-          { idempotencyKey: `pilot-interest/${submissionId}/applicant` },
+          { idempotencyKey: `care-enquiry/${submissionId}/applicant` },
         ),
     });
   }
 
-  // allSettled, not all: the applicant's confirmation failing (a typo'd or
+  // allSettled, not all: the enquirer's confirmation failing (a typo'd or
   // bouncing address, which is entirely likely) must not stop the founders
-  // being told that a submission arrived. That alert is the important one.
+  // being told that an enquiry arrived. That alert is the important one.
   const results = await Promise.allSettled(jobs.map((job) => job.run()));
 
   const outcome: NotifyOutcome = { ...NOTHING_ATTEMPTED };
@@ -314,12 +352,12 @@ export async function sendInterestEmails(
  * SEND one. The cost of a lost record is one duplicate-suppressed retry on the
  * next sweep, which the shared idempotency key already absorbs.
  */
-export async function recordNotificationOutcome(
+export async function recordCareNotificationOutcome(
   submissionId: string,
   outcome: NotifyOutcome,
 ): Promise<void> {
   try {
-    const { error } = await supabaseAdmin().rpc("mark_notification_sent", {
+    const { error } = await supabaseAdmin().rpc("mark_care_notification_sent", {
       p_id: submissionId,
       p_founder: outcome.founderSent,
       p_applicant: outcome.applicantSent,
@@ -343,32 +381,32 @@ export async function recordNotificationOutcome(
 /**
  * Sends both emails for a fresh submission and records the result.
  *
- * `submissionId` is null when submit_pilot_interest() did not return an id —
- * which means migration 0002 has not been applied yet. Mail still goes out;
- * only the bookkeeping is skipped, so an unmigrated deployment degrades to the
- * previous best-effort behaviour rather than failing.
+ * `submissionId` is null when submit_care_enquiry() did not return an id, which
+ * in practice means the migration has not been applied to this environment.
+ * Mail still goes out; only the bookkeeping is skipped, so an unmigrated
+ * deployment degrades to best-effort rather than failing.
  */
-export async function notifyPilotInterest(
-  values: InterestValues,
+export async function notifyCareEnquiry(
+  values: EnquiryValues,
   submissionId: string | null,
 ): Promise<void> {
   if (!submissionId) {
     console.warn(
-      "[BackHome] submit_pilot_interest returned no id; sending without " +
-        "retry tracking. Apply supabase/migrations/0002_notification_state.sql.",
+      "[BackHome] submit_care_enquiry returned no id; sending without retry " +
+        "tracking. Apply supabase/migrations/0003_care_enquiries.sql.",
     );
 
-    await sendInterestEmails(values, randomUUID(), {
+    await sendEnquiryEmails(values, randomUUID(), {
       founder: true,
       applicant: true,
     });
     return;
   }
 
-  const outcome = await sendInterestEmails(values, submissionId, {
+  const outcome = await sendEnquiryEmails(values, submissionId, {
     founder: true,
     applicant: true,
   });
 
-  await recordNotificationOutcome(submissionId, outcome);
+  await recordCareNotificationOutcome(submissionId, outcome);
 }

@@ -1,20 +1,26 @@
-import { services } from "@/content/site";
+import { careTypes } from "@/content/site";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Illustration } from "@/components/ui/illustration";
 import { Icon } from "@/components/ui/icon";
 
-export function ServicesSection() {
+export function CareTypesSection() {
   return (
-    <Section id="pilot-services" tone="base">
+    <Section id="care-types" tone="base">
       <SectionHeading
-        eyebrow="Pilot services"
-        heading={services.heading}
-        intro={services.intro}
+        eyebrow="Care types"
+        heading={careTypes.heading}
+        intro={careTypes.intro}
       />
 
-      <ul className="mt-16 grid gap-6 sm:grid-cols-2 lg:mt-20 lg:grid-cols-3">
-        {services.cards.map((card) => (
+      {/* Two across rather than four: these titles run to "Nursing homes and
+          assisted living", which wraps to three lines in a quarter-width column
+          at the h4 size. Four tiles in a 2x2 keeps the card width the six
+          services had. Deliberately <li>, not <a> — there are no listing pages
+          yet and a tile that goes nowhere is worse than one that plainly does
+          not move. */}
+      <ul className="mt-16 grid gap-6 sm:grid-cols-2 lg:mt-20">
+        {careTypes.cards.map((card) => (
           <li
             key={card.title}
             className="flex flex-col rounded-card border border-line bg-cream p-7 motion-safe:transition-colors hover:border-line-strong"
@@ -31,7 +37,7 @@ export function ServicesSection() {
         <span className="mt-0.5 shrink-0 text-brown">
           <Icon name="warning" className="h-6 w-6" />
         </span>
-        <p className="leading-relaxed text-ink">{services.disclaimer}</p>
+        <p className="leading-relaxed text-ink">{careTypes.disclaimer}</p>
       </div>
     </Section>
   );

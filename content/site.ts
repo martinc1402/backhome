@@ -5,8 +5,10 @@
    section components stay purely presentational. Edit text in this file; you
    should not need to touch any .tsx file to change wording.
 
-   Image slots reference files in /public/placeholders — see that folder's
-   README.md for the photo brief for each one.
+   Nothing on this page may claim a track record BackHome does not have yet: no
+   facility counts, no families helped, no testimonials, no partner logos, no
+   review scores. Nothing is listed and nobody has signed up. Every line here
+   has to stay true on the day it is read.
 --------------------------------------------------------------------------- */
 
 export type IconName =
@@ -25,7 +27,7 @@ export type IconName =
 
 export const site = {
   name: "BackHome",
-  tagline: "Trusted family support in Cebu",
+  tagline: "Find trusted senior care in Cebu",
   contactEmail: "hello@backhome.ph",
   serviceArea: "Cebu, Philippines",
 } as const;
@@ -33,20 +35,20 @@ export const site = {
 export const nav = {
   links: [
     { label: "How it works", href: "#how-it-works" },
-    { label: "Pilot services", href: "#pilot-services" },
+    { label: "Care types", href: "#care-types" },
     { label: "Why BackHome", href: "#why-backhome" },
   ],
-  cta: { label: "Join the pilot", href: "#join" },
+  cta: { label: "Get a shortlist", href: "#get-a-shortlist" },
 } as const;
 
 export const hero = {
   eyebrow: "Starting in Cebu",
-  heading: "Trusted help back home when you can't be there",
-  body: "BackHome helps overseas Filipinos coordinate practical support for parents, relatives and homes in Cebu—from family check-ins and appointments to household tasks and property concerns.",
-  primaryCta: { label: "Express interest in the pilot", href: "#join" },
-  secondaryCta: { label: "See how it could work", href: "#how-it-works" },
+  heading: "Find trusted care back home when you can't be there",
+  body: "BackHome helps overseas Filipinos find senior care in Cebu — nursing homes, assisted living, live-in caregivers and home-care agencies — with real monthly prices and visits in person, so you can choose with confidence from anywhere.",
+  primaryCta: { label: "Get a shortlist", href: "#get-a-shortlist" },
+  secondaryCta: { label: "See how it works", href: "#how-it-works" },
   reassurance:
-    "The pilot will initially be limited to a small number of Cebu families.",
+    "We are starting in Metro Cebu and will grow as we verify more options.",
   /**
    * Full-bleed hero background. Exactly one asset is fetched per viewport,
    * never both — the gate is `<source media>`, not CSS, because a CSS-hidden
@@ -102,120 +104,115 @@ export const hero = {
   },
 } as const;
 
-export const scenarios = {
+export const problem = {
   /** Opens the section as a standalone statement line, above the heading. */
-  lead: "Someone local. Clear updates. Less worry from afar.",
-  heading: "Being far away makes simple things difficult",
+  lead: "Visited in person. Real prices. Less guesswork from afar.",
+  heading: "Choosing care from overseas is harder than it should be",
   intro:
-    "Sending money home may be easy. Coordinating what actually needs to happen can be much harder.",
+    "Most homes and agencies in Cebu only exist on Facebook. Prices are rarely published. Visiting is not an option when you are thousands of kilometres away.",
   cards: [
     {
-      icon: "calendar" as IconName,
-      title: "Mum needs help getting to an appointment",
-      body: "You want someone reliable to accompany her, help with the practical details and let you know how everything went.",
-    },
-    {
       icon: "check-in" as IconName,
-      title: "You need someone to check in",
-      body: "A family member has not answered, something feels wrong, or you simply want reassurance that they are okay.",
-    },
-    {
-      icon: "wrench" as IconName,
-      title: "A repair needs to be organised",
-      body: "You need someone local to coordinate the work, verify what was completed and provide photos or receipts.",
+      title: "Mum can't live alone anymore",
+      body: "You need to know which homes take her care level, what they cost, and whether they have a place.",
     },
     {
       icon: "recovery" as IconName,
-      title: "Your family needs support after hospital",
-      body: "There may be transport, medication, household or follow-up tasks that are difficult to manage remotely.",
+      title: "Dad is coming out of hospital",
+      body: "You need care in place within days, without knowing who is reliable.",
+    },
+    {
+      icon: "visit" as IconName,
+      title: "We need a live-in caregiver",
+      body: "Agencies, freelancers and referrals from relatives all cost different amounts, and you cannot check them yourself.",
+    },
+    {
+      icon: "home" as IconName,
+      title: "We're comparing homes from overseas",
+      body: "Photos on a Facebook page do not tell you about staffing, cleanliness or what is billed as extra.",
     },
   ],
 } as const;
 
 export const process = {
-  heading: "Practical support without coordinating everything yourself",
+  heading: "The legwork you'd do yourself if you were there",
   steps: [
     {
       number: "01",
-      title: "Tell us what your family needs",
-      body: "Explain the situation, who needs support and what outcome you are trying to arrange.",
+      title: "Tell us about your parent",
+      body: "Where they are, what care they need, your timing and budget.",
     },
     {
       number: "02",
-      title: "BackHome coordinates locally",
-      body: "A Cebu-based coordinator arranges the task directly or connects the right trusted local support.",
+      title: "We shortlist verified options",
+      body: "Places and agencies we have called and visited, with monthly prices and what is included.",
     },
     {
       number: "03",
-      title: "You receive clear updates",
-      body: "Get progress messages, photos, receipts and confirmation that the task has been completed.",
+      title: "You choose, we arrange",
+      body: "Video tours, introductions and the practical next steps.",
     },
   ],
-  note: "The exact pilot service model is still being designed with participating families.",
+  note: "During the pilot we handle each family personally.",
 } as const;
 
-export const services = {
-  heading: "Services being considered for the Cebu pilot",
+export const careTypes = {
+  heading: "Care we are verifying in Metro Cebu",
   intro:
-    "The initial pilot will focus on practical, clearly defined support that can be coordinated and verified.",
+    "For each option we confirm monthly rates, care levels accepted, nurse coverage and vacancies, and visit in person where we can.",
+  /**
+   * Four categories, not a service menu. These are deliberately NOT links:
+   * there are no listing pages yet, and a tile that goes nowhere is worse than
+   * a tile that plainly does not move. See components/care-types-section.tsx.
+   */
   cards: [
     {
+      icon: "home" as IconName,
+      title: "Nursing homes and assisted living",
+      body: "Residential places where your parent lives on site, with staff on hand day and night.",
+    },
+    {
       icon: "visit" as IconName,
-      title: "Family welfare visits",
-      body: "Respectful in-person check-ins and clear updates for overseas relatives.",
+      title: "Live-in caregivers",
+      body: "One carer who lives in the family home and looks after your parent day to day.",
     },
     {
       icon: "calendar" as IconName,
-      title: "Appointment accompaniment",
-      body: "Practical support before, during and after selected appointments.",
-    },
-    {
-      icon: "pill" as IconName,
-      title: "Medication and essential pickups",
-      body: "Coordination of approved collections and household essentials.",
-    },
-    {
-      icon: "wrench" as IconName,
-      title: "Home repair coordination",
-      body: "Help sourcing providers, arranging access and verifying completion.",
-    },
-    {
-      icon: "home" as IconName,
-      title: "Property checks",
-      body: "Photo-supported inspections for homes, units or family properties.",
+      title: "Home-care agencies (shift-based)",
+      body: "Carers who come to the house for set hours or shifts, arranged through an agency.",
     },
     {
       icon: "recovery" as IconName,
-      title: "Post-hospital practical support",
-      body: "Non-clinical coordination of transport, household tasks and follow-up needs.",
+      title: "Post-hospital care",
+      body: "Short-term care after a hospital stay, at home or in a residential place, while your parent recovers.",
     },
   ],
   disclaimer:
-    "BackHome will not provide emergency response, medical advice or regulated clinical services. Qualified professionals will be used where required.",
+    "BackHome is not a care provider. We do not give medical advice, provide emergency response or regulated clinical services. We verify options and help you choose.",
 } as const;
 
 export const trust = {
-  heading: "You should not have to rely on vague updates",
+  heading: "You should not have to choose from a Facebook page",
   principles: [
     {
-      icon: "shield" as IconName,
-      title: "Someone accountable",
-      body: "BackHome becomes the clear point of contact responsible for coordinating the agreed task.",
+      icon: "visit" as IconName,
+      title: "Visited in person",
+      body: "Dated visit notes and photos, staff on shift, what the place is actually like.",
     },
     {
       icon: "receipt" as IconName,
-      title: "Proof of completion",
-      body: "Receive photos, receipts, status updates and a clear summary where appropriate.",
+      title: "Real prices",
+      body: "Monthly rates confirmed by phone, including what is billed as extra.",
     },
     {
       icon: "heart" as IconName,
-      title: "Respect for your family",
-      body: "Support should feel helpful and dignified—not intrusive or controlling.",
+      title: "Honest about money",
+      body: "Facilities may pay us a referral fee. Families never pay, and fees never change what we show you.",
     },
     {
       icon: "scope" as IconName,
-      title: "Clear service boundaries",
-      body: "Every task will have a defined scope, price and expected outcome before work begins.",
+      title: "Clear boundaries",
+      body: "We are not a care provider and will say so when a need is beyond what we can help with.",
     },
   ],
   /**
@@ -238,11 +235,11 @@ export const trust = {
 export const founder = {
   heading: "Built between Australia and Cebu",
   paragraphs: [
-    "BackHome was created by Yahnee and Martin, a Filipino-Australian family preparing to move from Canberra to Cebu.",
-    "The idea came from seeing how difficult it can be for families overseas to coordinate practical responsibilities back home. Too often, the only option is to send money, message a relative and hope someone has the time to follow through.",
-    "BackHome is being designed as a more accountable alternative: trusted local coordination, respectful support and clear updates for families living abroad.",
+    "BackHome was created by Yahnee and Martin, a Filipino-Australian family based in Australia.",
+    "The idea came from seeing how hard it is to find and compare care for a parent from overseas, when the only options are a Facebook page and a relative's recommendation.",
+    "We visit Cebu regularly and are building BackHome by calling and visiting homes and agencies ourselves.",
   ],
-  note: "We are starting carefully in Cebu and speaking directly with families before finalising the service.",
+  note: "We are starting in Cebu, visiting homes ourselves and speaking with families before we list anything.",
   /**
    * Real photograph, not a placeholder. Served with Cache-Control: immutable
    * (next.config.ts) — bump the version suffix on any change, and never
@@ -250,9 +247,9 @@ export const founder = {
    *
    * NOTE: this is a pharmacy pickup, not a portrait of the founders. The alt
    * text describes what is actually in the frame rather than naming Yahnee and
-   * Martin, because the people shown are not them. If a founder portrait
-   * arrives later this slot should take it, and this image would sit more
-   * naturally against the "Medication and essential pickups" service.
+   * Martin, because the people shown are not them. It stays here as the only
+   * remaining slot for it now that the old services section is gone; if a real
+   * founder portrait arrives, this slot should take it.
    */
   image: {
     src: "/media/pharmacy-pickup.v1.webp",
@@ -262,32 +259,32 @@ export const founder = {
   },
 } as const;
 
-export const interest = {
-  heading: "Help shape the BackHome Cebu pilot",
+export const enquiry = {
+  heading: "Tell us about your parent",
   intro:
-    "We are inviting overseas Filipinos with parents, relatives or property in Cebu to express interest and tell us what support would be most useful.",
-  submitLabel: "Express interest",
+    "We will send verified options as we confirm them, and can talk it through on a call. There is no cost to families.",
+  submitLabel: "Get a shortlist",
   submittingLabel: "Sending…",
-  footnote:
-    "No payment is required. Expressing interest does not commit you to joining the pilot.",
+  footnote: "No payment is required. We will reply personally.",
   success: {
     heading: "Thank you — we have your details",
-    body: "We will be in touch as the Cebu pilot takes shape. If you offered a short research call, we may reach out to hear more about your situation.",
-    footnote: "Nothing is committed and no payment is required.",
+    body: "We will send verified care options as we confirm them, and we will reply personally. If you asked for a call, we will suggest a time.",
+    footnote: "There is no cost to families and no payment is required.",
   },
-  // Two things the pilot genuinely has not settled yet. Stated plainly so
-  // nobody infers a price or a service area that has not been committed to.
-  // Shown beside the form in both its empty and submitted states.
-  stillDeciding: {
-    label: "Still being decided",
+  // Two things people reasonably want to know before typing anything: who pays
+  // us, and where we actually operate. Both are settled, so this block states
+  // them rather than hedging. Shown beside the form in both its empty and
+  // submitted states.
+  practicalities: {
+    label: "Practical details",
     items: [
       {
-        title: "Pricing",
-        body: "Pilot pricing has not been finalised. We are researching whether families prefer one-off task pricing, monthly support plans, or a combination of both.",
+        title: "How we are paid",
+        body: "Facilities may pay us a referral fee once a resident has settled in. Families never pay, and a fee never affects what we show you or the order we show it in.",
       },
       {
         title: "Service area",
-        body: "The initial service area will depend on pilot demand and local operating capacity. That is why we ask where your family is — it directly shapes where we start.",
+        body: "Metro Cebu for now — Cebu City, Mandaue, Lapu-Lapu and the towns around them. We will grow as we verify more of the province.",
       },
     ],
   },
@@ -295,19 +292,19 @@ export const interest = {
 
 export const finalCta = {
   heading: "You may be overseas. Your responsibilities are still back home.",
-  body: "BackHome is being built so you no longer have to coordinate everything alone.",
-  cta: { label: "Join the Cebu pilot waitlist", href: "#join" },
-  note: "Limited initial pilot. No obligation to participate.",
+  body: "BackHome does the legwork in Cebu so you can choose care with confidence.",
+  cta: { label: "Tell us about your parent", href: "#get-a-shortlist" },
+  note: "No cost to families. No obligation.",
 } as const;
 
 export const footer = {
   description:
-    "BackHome helps overseas Filipinos coordinate practical support for parents, relatives and homes in Cebu.",
-  serviceAreaLabel: "Pilot service area",
+    "BackHome helps overseas Filipinos find senior care in Cebu — nursing homes, assisted living, live-in caregivers and home-care agencies — with real prices and visits in person.",
+  serviceAreaLabel: "Service area",
   links: [
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },
   ],
   disclaimer:
-    "BackHome is currently in pilot development. Services described are subject to change.",
+    "BackHome is not a care provider. We are starting in Metro Cebu and nothing is listed yet.",
 } as const;

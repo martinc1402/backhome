@@ -6,7 +6,7 @@ import { ImageResponse } from "next/og";
 // is available.
 
 export const alt =
-  "BackHome — trusted help in Cebu when you can't be there. Preparing a Cebu pilot for overseas Filipino families.";
+  "BackHome — find trusted senior care in Cebu from overseas. Nursing homes, assisted living and home care, visited in person and priced.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -50,7 +50,7 @@ export default function OpengraphImage() {
               maxWidth: "900px",
             }}
           >
-            Trusted help in Cebu when you can&rsquo;t be there
+            Find trusted care back home when you can&rsquo;t be there
           </div>
           <div
             style={{
@@ -62,8 +62,8 @@ export default function OpengraphImage() {
               fontFamily: "sans-serif",
             }}
           >
-            Practical support for parents, relatives and property, coordinated
-            locally for families living overseas.
+            Nursing homes, assisted living, live-in caregivers and home-care
+            agencies in Cebu — visited in person, with real monthly prices.
           </div>
         </div>
 
@@ -75,7 +75,7 @@ export default function OpengraphImage() {
             fontFamily: "sans-serif",
           }}
         >
-          Cebu pilot · Now inviting interest
+          Starting in Metro Cebu · No cost to families
         </div>
       </div>
     ),

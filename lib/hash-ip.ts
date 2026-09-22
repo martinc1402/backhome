@@ -15,7 +15,7 @@ const UNKNOWN_IP = "unknown";
 
 /**
  * A salted SHA-256 of the submitter's IP address, used only to rate limit
- * submissions in public.pilot_interest.
+ * submissions in public.care_enquiries.
  *
  * The raw address is never stored. That matters: an unsalted hash of an IP is
  * not anonymous, because the entire IPv4 space is small enough to brute force

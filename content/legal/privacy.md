@@ -16,24 +16,30 @@ We handle personal information in accordance with the Australian Privacy Act 198
 
 ### Information you give us directly
 
-When you express interest through our website, we may collect:
+When you ask us for a shortlist of care options, we may collect:
 
 - Your full name
 - Your email address
 - Your phone or WhatsApp number (optional)
 - The country you currently live in
-- The area in Cebu where your family or property is located
-- Your relationship to the person or people you are asking about
-- A free-text description of your situation
-- Which service you would be most likely to use
-- Whether you consent to a short research call
-- Whether you consent to us contacting you about BackHome
+- The area in Metro Cebu where your parent is
+- The type of care you are looking for
+- The level of care your parent needs (optional)
+- How soon care is needed
+- The monthly budget range you have in mind (optional)
+- A free-text description of what is happening (optional)
+- Whether you are open to a short call
+- Whether you consent to us storing this to find care options
 
 ### Information about other people
 
 Our form asks about your family situation. In answering, you may give us information about other people — often an elderly parent or relative in Cebu.
 
-**This is important.** That person has not filled in our form and has not consented to us holding information about them. Before you tell us about someone else, please consider whether they would be comfortable with that. Share only what is necessary, and avoid sensitive details such as medical diagnoses, medication, or financial information at this stage.
+**This is important.** That person has not filled in our form and has not consented to us holding information about them. Before you tell us about someone else, please consider whether they would be comfortable with that, and share only what is necessary.
+
+Finding suitable care means we have to ask about a level of care, and that is health information about your parent. The "level of care" question and the free-text box are both optional, and a general answer is enough — we do not need a diagnosis, a medication list, or medical records, and you should not send them. Whatever you do tell us is used for one purpose only: matching your parent to care options that can actually meet their needs. We do not use it for anything else, and we do not pass it to a facility without telling you first.
+
+Under the Australian Privacy Act health information is sensitive information, and under the Philippine Data Privacy Act it is sensitive personal information. Both require your consent before we collect it, which is what the checkbox on the form is for.
 
 If we later begin providing services, we will ask for that person's consent directly where it is practicable to do so, and we will explain to them what we hold and why.
 
@@ -47,14 +53,17 @@ When you visit our website we may collect standard technical information such as
 
 We use personal information to:
 
-- Contact you about the Cebu pilot and let you know when places open
-- Understand what support families actually need, so we design the right service
-- Arrange and conduct short research conversations, where you have agreed to one
-- Assess where in Cebu we should operate first
+- Find care options in Metro Cebu that match your parent's needs, location, timing and budget
+- Contact you with those options and answer your questions
+- Arrange a short call, where you have agreed to one
+- Arrange introductions, video tours or visits to a home or agency you have chosen
+- Understand which areas of Cebu and which kinds of care we should cover next
 - Improve our website
 - Meet our legal obligations
 
 We do not sell personal information. We do not share it with advertisers.
+
+We only pass your details to a care home, agency or caregiver once you have chosen to be introduced to them, and we will tell you before we do. A facility may pay us a referral fee if your parent later moves in; that fee never changes which options we show you or the order we show them in.
 
 ## 4. Consent and how to withdraw it
 

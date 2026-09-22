@@ -1,12 +1,13 @@
 import "server-only";
 
+import { describeDbError, describeError } from "@/lib/log-safe";
 import {
-  recordNotificationOutcome,
-  sendInterestEmails,
+  recordCareNotificationOutcome,
+  sendEnquiryEmails,
   type NotifyTargets,
-} from "@/lib/notify-interest";
+} from "@/lib/notify-enquiry";
 import { supabaseAdmin } from "@/lib/supabase";
-import { type InterestValues } from "@/lib/validate-interest";
+import { type EnquiryValues } from "@/lib/validate-enquiry";
 
 /* ---------------------------------------------------------------------------
    Retry sweep for notifications that never went out.
@@ -18,22 +19,30 @@ import { type InterestValues } from "@/lib/validate-interest";
 
    Driven by a daily cron (see vercel.ts -> app/api/notify-sweep/route.ts).
    Claiming is race-safe in Postgres, so a cron firing while a manual run is
-   still going cannot double-send — see claim_pending_notifications() in
-   supabase/migrations/0002_notification_state.sql.
+   still going cannot double-send — see claim_pending_care_notifications() in
+   supabase/care_enquiries.sql.
+
+   THIS FILE MAY LOG COUNTS AND ROW IDS, NEVER A ROW. The claim returns every
+   column, including care_level and the free-text situation — unavoidable, since
+   the founder alert cannot be rebuilt without them. Do not add a
+   console.error("row failed:", row) here, and do not pass a raw Supabase error
+   object to console: see lib/log-safe.ts for why.
 --------------------------------------------------------------------------- */
 
-/** Shape of the rows claim_pending_notifications() returns. */
-type PendingRow = {
+/** Shape of the rows claim_pending_care_notifications() returns. */
+type PendingEnquiryRow = {
   id: string;
   full_name: string;
   email: string;
   phone: string | null;
   country: string;
-  cebu_location: string;
-  who_you_help: string;
-  recent_situation: string | null;
-  first_service: string;
-  research_call: boolean;
+  parent_location: string;
+  care_type: string;
+  care_level: string | null;
+  timing: string;
+  budget_band: string | null;
+  situation: string | null;
+  open_to_call: boolean;
   consent: boolean;
   founder_notified_at: string | null;
   applicant_notified_at: string | null;
@@ -51,21 +60,25 @@ export type SweepSummary = {
 /**
  * Rebuilds the value object the email templates expect from a database row.
  *
- * The nullable text columns come back as null where the form supplied an empty
- * optional field, because submit_pilot_interest() stores them through nullif.
+ * The nullable columns come back as null where the form supplied an empty
+ * optional field, because submit_care_enquiry() stores them through nullif.
+ * Mapping them back to "" reproduces the original email exactly — including
+ * which fields showed "Not specified".
  */
-function toInterestValues(row: PendingRow): InterestValues {
+function toEnquiryValues(row: PendingEnquiryRow): EnquiryValues {
   return {
     fullName: row.full_name,
     email: row.email,
     phone: row.phone ?? "",
     country: row.country,
-    cebuLocation: row.cebu_location,
-    whoYouHelp: row.who_you_help,
-    recentSituation: row.recent_situation ?? "",
-    firstService: row.first_service,
+    parentLocation: row.parent_location,
+    careType: row.care_type,
+    careLevel: row.care_level ?? "",
+    timing: row.timing,
+    budgetBand: row.budget_band ?? "",
+    situation: row.situation ?? "",
     consent: row.consent ? "on" : "",
-    researchCall: row.research_call,
+    openToCall: row.open_to_call,
   };
 }
 
@@ -74,9 +87,9 @@ function toInterestValues(row: PendingRow): InterestValues {
  *
  * Deriving targets from the timestamps rather than re-sending both is what
  * stops a half-failed submission from mailing the founders a second time every
- * night until the applicant's dead address happens to start working.
+ * night until the enquirer's dead address happens to start working.
  */
-function pendingTargets(row: PendingRow): NotifyTargets {
+function pendingTargets(row: PendingEnquiryRow): NotifyTargets {
   return {
     founder: row.founder_notified_at === null,
     applicant: row.applicant_notified_at === null,
@@ -94,24 +107,24 @@ export async function runNotificationSweep(
     error: null,
   };
 
-  let rows: PendingRow[];
+  let rows: PendingEnquiryRow[];
 
   try {
     const { data, error } = await supabaseAdmin().rpc(
-      "claim_pending_notifications",
+      "claim_pending_care_notifications",
       { p_limit: limit },
     );
 
     if (error) {
-      summary.error = error.message ?? "claim failed";
-      console.error("[BackHome] Sweep could not claim rows:", error);
+      summary.error = describeDbError(error);
+      console.error(`[BackHome] Sweep could not claim rows: ${summary.error}`);
       return summary;
     }
 
-    rows = (data ?? []) as PendingRow[];
+    rows = (data ?? []) as PendingEnquiryRow[];
   } catch (error) {
-    summary.error = error instanceof Error ? error.message : String(error);
-    console.error("[BackHome] Sweep could not claim rows:", error);
+    summary.error = describeError(error);
+    console.error(`[BackHome] Sweep could not claim rows: ${summary.error}`);
     return summary;
   }
 
@@ -128,15 +141,15 @@ export async function runNotificationSweep(
   for (const row of rows) {
     const targets = pendingTargets(row);
 
-    const outcome = await sendInterestEmails(
-      toInterestValues(row),
+    const outcome = await sendEnquiryEmails(
+      toEnquiryValues(row),
       // The row id, so the idempotency key matches the original attempt and
       // Resend suppresses anything it already accepted.
       row.id,
       targets,
     );
 
-    await recordNotificationOutcome(row.id, outcome);
+    await recordCareNotificationOutcome(row.id, outcome);
 
     if (outcome.founderSent) summary.founderSent += 1;
     if (outcome.applicantSent) summary.applicantSent += 1;

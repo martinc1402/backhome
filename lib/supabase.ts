@@ -16,12 +16,12 @@ import { requireEnv } from "@/lib/env";
      - the variable name, which deliberately has no NEXT_PUBLIC_ prefix, so
        Next will not inline it into the client bundle.
 
-   Bypassing RLS is the point rather than a shortcut. public.pilot_interest has
+   Bypassing RLS is the point rather than a shortcut. public.care_enquiries has
    RLS enabled with NO policies at all, so the publishable key — the one that is
    designed to be shipped to browsers — can neither read nor write it. The rows
-   hold names, emails, phone numbers and free text about family circumstances,
-   so "unreachable without the secret key" is the posture we want, and it is
-   stricter than the usual anon-insert-only pattern.
+   hold names, emails, phone numbers, a parent's care level and free text about
+   a family's circumstances, so "unreachable without the secret key" is the
+   posture we want, and it is stricter than the usual anon-insert-only pattern.
 --------------------------------------------------------------------------- */
 
 let client: SupabaseClient | undefined;

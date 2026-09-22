@@ -11,7 +11,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 export function ProcessSection() {
   return (
     <Section id="how-it-works" tone="cream">
-      <SectionHeading eyebrow="How it could work" heading={process.heading} />
+      <SectionHeading eyebrow="How it works" heading={process.heading} />
 
       <ol className="mt-16 grid gap-12 md:grid-cols-3 md:gap-10 lg:mt-24">
         {process.steps.map((step) => (

@@ -2,29 +2,65 @@
 
 import { useActionState, useEffect, useId, useRef, useState } from "react";
 
-import { submitPilotInterest } from "@/app/actions";
-import { interest } from "@/content/site";
+import { submitCareEnquiry } from "@/app/actions";
+import { enquiry } from "@/content/site";
 import { Button } from "@/components/ui/button";
+import {
+  BUDGET_BAND_OPTIONS,
+  CARE_LEVEL_OPTIONS,
+  CARE_TYPE_OPTIONS,
+  PARENT_LOCATION_OPTIONS,
+  TIMING_OPTIONS,
+} from "@/lib/enquiry-options";
 import {
   FIELD_ORDER,
   MAX_LENGTH,
-  SERVICE_OPTIONS,
-  initialInterestState,
+  initialEnquiryState,
   type FieldName,
-} from "@/lib/validate-interest";
+} from "@/lib/validate-enquiry";
 
-export function InterestForm() {
+/**
+ * The five <select> fields, and their initial (unanswered) values.
+ *
+ * React 19 resets the form once a Server Action resolves. Text inputs ride that
+ * out because the reset clears their dirty flag and they fall back to the
+ * defaultValue we echo back from the server — but a <select> has no equivalent,
+ * so it snaps to its placeholder and the user silently loses their choice.
+ *
+ * The previous pilot form had one select and kept one piece of state for it.
+ * With five, that has to be a map: re-asserting only some of them would lose
+ * the rest on any validation error, which is exactly when it hurts most.
+ */
+const SELECT_FIELDS = [
+  "parentLocation",
+  "careType",
+  "careLevel",
+  "timing",
+  "budgetBand",
+] as const;
+
+type SelectField = (typeof SELECT_FIELDS)[number];
+
+const NO_SELECTION: Record<SelectField, string> = {
+  parentLocation: "",
+  careType: "",
+  careLevel: "",
+  timing: "",
+  budgetBand: "",
+};
+
+export function EnquiryForm() {
   const [state, formAction, pending] = useActionState(
-    submitPilotInterest,
-    initialInterestState,
+    submitCareEnquiry,
+    initialEnquiryState,
   );
 
   const formRef = useRef<HTMLFormElement>(null);
   const successRef = useRef<HTMLDivElement>(null);
   const formId = useId();
 
-  // The select is controlled so its value survives re-renders.
-  const [service, setService] = useState("");
+  // Controlled so their values survive the post-action re-render. See above.
+  const [selects, setSelects] = useState<Record<SelectField, string>>(NO_SELECTION);
 
   const fieldErrors = state.status === "error" ? state.fieldErrors : {};
   const values = state.status === "error" ? state.values : {};
@@ -37,20 +73,20 @@ export function InterestForm() {
     return ids.length > 0 ? ids.join(" ") : undefined;
   };
 
-  // React 19 resets the form once a Server Action resolves. Text inputs ride
-  // that out because the reset clears their dirty flag and they fall back to
-  // the defaultValue we echo back from the server — but a <select> has no
-  // equivalent, so it snaps to the disabled placeholder and the user silently
-  // loses their choice. Re-assert it after every action result.
+  // Re-assert every select after each action result, for the reason above.
   useEffect(() => {
     if (state.status !== "error") return;
 
-    const select = formRef.current?.elements.namedItem(
-      "firstService",
-    ) as HTMLSelectElement | null;
+    for (const field of SELECT_FIELDS) {
+      const select = formRef.current?.elements.namedItem(
+        field,
+      ) as HTMLSelectElement | null;
 
-    if (select && select.value !== service) select.value = service;
-  }, [state, service]);
+      if (select && select.value !== selects[field]) {
+        select.value = selects[field];
+      }
+    }
+  }, [state, selects]);
 
   // Move focus to the first invalid field so keyboard and screen reader users
   // are taken straight to what needs fixing.
@@ -93,14 +129,25 @@ export function InterestForm() {
             <path d="M5 12.5l4.5 4.5L19 7.5" />
           </svg>
         </span>
-        <h3 className="type-h3 mt-7 text-forest">{interest.success.heading}</h3>
+        <h3 className="type-h3 mt-7 text-forest">{enquiry.success.heading}</h3>
         <p className="mx-auto mt-5 max-w-md leading-relaxed text-bark">
-          {interest.success.body}
+          {enquiry.success.body}
         </p>
-        <p className="mt-7 text-sm text-bark/80">{interest.success.footnote}</p>
+        <p className="mt-7 text-sm text-bark/80">{enquiry.success.footnote}</p>
       </div>
     );
   }
+
+  const selectProps = (field: SelectField, hasHint = false) => ({
+    id: `${formId}-${field}`,
+    name: field,
+    value: selects[field],
+    onChange: (event: React.ChangeEvent<HTMLSelectElement>) =>
+      setSelects((current) => ({ ...current, [field]: event.target.value })),
+    "aria-invalid": Boolean(fieldErrors[field]),
+    "aria-describedby": describe(field, hasHint),
+    className: "field-input",
+  });
 
   return (
     <form
@@ -143,7 +190,6 @@ export function InterestForm() {
           name="fullName"
           label="Full name"
           error={fieldErrors.fullName}
-          describedBy={describe("fullName", false)}
         >
           <input
             id={`${formId}-fullName`}
@@ -164,7 +210,6 @@ export function InterestForm() {
           name="email"
           label="Email address"
           error={fieldErrors.email}
-          describedBy={describe("email", false)}
         >
           <input
             id={`${formId}-email`}
@@ -184,11 +229,10 @@ export function InterestForm() {
         <Field
           formId={formId}
           name="phone"
-          label="Phone or WhatsApp number"
+          label="Phone or WhatsApp"
           optional
           hint="Include your country code, e.g. +61."
           error={fieldErrors.phone}
-          describedBy={describe("phone", true)}
         >
           <input
             id={`${formId}-phone`}
@@ -209,7 +253,6 @@ export function InterestForm() {
           name="country"
           label="Country you currently live in"
           error={fieldErrors.country}
-          describedBy={describe("country", false)}
         >
           <input
             id={`${formId}-country`}
@@ -227,107 +270,125 @@ export function InterestForm() {
 
         <Field
           formId={formId}
-          name="cebuLocation"
-          label="Where in Cebu does your family or property need support?"
-          hint="A city, town or barangay is enough."
-          error={fieldErrors.cebuLocation}
-          describedBy={describe("cebuLocation", true)}
-          span
+          name="parentLocation"
+          label="Where in Cebu is your parent?"
+          error={fieldErrors.parentLocation}
         >
-          <input
-            id={`${formId}-cebuLocation`}
-            name="cebuLocation"
-            type="text"
-            required
-            maxLength={MAX_LENGTH.cebuLocation}
-            defaultValue={values.cebuLocation ?? ""}
-            aria-invalid={Boolean(fieldErrors.cebuLocation)}
-            aria-describedby={describe("cebuLocation", true)}
-            className="field-input"
-          />
-        </Field>
-
-        <Field
-          formId={formId}
-          name="whoYouHelp"
-          label="Who do you currently help in Cebu?"
-          hint="For example: my mother and my aunt, or my parents and our family home."
-          error={fieldErrors.whoYouHelp}
-          describedBy={describe("whoYouHelp", true)}
-          span
-        >
-          <input
-            id={`${formId}-whoYouHelp`}
-            name="whoYouHelp"
-            type="text"
-            required
-            maxLength={MAX_LENGTH.whoYouHelp}
-            defaultValue={values.whoYouHelp ?? ""}
-            aria-invalid={Boolean(fieldErrors.whoYouHelp)}
-            aria-describedby={describe("whoYouHelp", true)}
-            className="field-input"
-          />
-        </Field>
-
-        <Field
-          formId={formId}
-          name="recentSituation"
-          label="What is one recent situation that was difficult to manage from overseas?"
-          optional
-          hint="This is the most useful thing you can tell us — a few sentences is plenty."
-          error={fieldErrors.recentSituation}
-          describedBy={describe("recentSituation", true)}
-          span
-        >
-          <textarea
-            id={`${formId}-recentSituation`}
-            name="recentSituation"
-            rows={4}
-            maxLength={MAX_LENGTH.recentSituation}
-            defaultValue={values.recentSituation ?? ""}
-            aria-invalid={Boolean(fieldErrors.recentSituation)}
-            aria-describedby={describe("recentSituation", true)}
-            className="field-input"
-          />
-        </Field>
-
-        <Field
-          formId={formId}
-          name="firstService"
-          label="Which service would you be most likely to use first?"
-          error={fieldErrors.firstService}
-          describedBy={describe("firstService", false)}
-          span
-        >
-          <select
-            id={`${formId}-firstService`}
-            name="firstService"
-            required
-            value={service}
-            onChange={(event) => setService(event.target.value)}
-            aria-invalid={Boolean(fieldErrors.firstService)}
-            aria-describedby={describe("firstService", false)}
-            className="field-input"
-          >
+          <select {...selectProps("parentLocation")} required>
             <option value="" disabled>
-              Choose a service…
+              Choose an area…
             </option>
-            {SERVICE_OPTIONS.map((option) => (
+            {PARENT_LOCATION_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
             ))}
           </select>
         </Field>
+
+        <Field
+          formId={formId}
+          name="careType"
+          label="Type of care"
+          error={fieldErrors.careType}
+        >
+          <select {...selectProps("careType")} required>
+            <option value="" disabled>
+              Choose an option…
+            </option>
+            {CARE_TYPE_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field
+          formId={formId}
+          name="careLevel"
+          label="Level of care"
+          optional
+          error={fieldErrors.careLevel}
+        >
+          {/* Placeholder is NOT disabled on the optional selects: having chosen
+              something, the user must be able to go back to "not answered".
+              An empty value is stored as NULL; a chosen "Not sure" is stored as
+              a real answer, and the founders' alert tells the two apart. */}
+          <select {...selectProps("careLevel")}>
+            <option value="">Not specified</option>
+            {CARE_LEVEL_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field
+          formId={formId}
+          name="timing"
+          label="Timing"
+          error={fieldErrors.timing}
+        >
+          <select {...selectProps("timing")} required>
+            <option value="" disabled>
+              Choose an option…
+            </option>
+            {TIMING_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field
+          formId={formId}
+          name="budgetBand"
+          label="Monthly budget"
+          optional
+          error={fieldErrors.budgetBand}
+        >
+          <select {...selectProps("budgetBand")}>
+            <option value="">Not specified</option>
+            {BUDGET_BAND_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field
+          formId={formId}
+          name="situation"
+          label="What is happening right now?"
+          optional
+          hint="A few sentences is plenty. Leave out anything you would rather discuss on a call."
+          error={fieldErrors.situation}
+          span
+        >
+          <textarea
+            id={`${formId}-situation`}
+            name="situation"
+            rows={4}
+            maxLength={MAX_LENGTH.situation}
+            defaultValue={values.situation ?? ""}
+            aria-invalid={Boolean(fieldErrors.situation)}
+            aria-describedby={describe("situation", true)}
+            className="field-input"
+          />
+        </Field>
       </div>
 
       <div className="mt-7 space-y-4 border-t border-line-strong pt-6">
         <Checkbox
           formId={formId}
-          name="researchCall"
-          defaultChecked={values.researchCall ?? false}
-          label="I would be open to a short research call"
-          hint="A 20-minute conversation about what would actually help. Entirely optional."
+          name="openToCall"
+          defaultChecked={values.openToCall ?? false}
+          label="I am open to a 20-minute call"
+          hint="A short conversation about your parent and what would help. Entirely optional."
         />
 
         <Checkbox
@@ -336,12 +397,11 @@ export function InterestForm() {
           defaultChecked={values.consent === "on"}
           required
           error={fieldErrors.consent}
-          label="I agree to be contacted about the BackHome pilot"
+          label="I agree to BackHome storing this information to find care options for my family."
           hint={
             <>
-              We will only use your details to talk to you about the pilot. No
-              marketing lists, and you can ask us to delete your details at any
-              time. See our{" "}
+              Health details are optional and used only for this purpose. You
+              can ask us to delete your details at any time. See our{" "}
               {/* Opens in a new tab deliberately: this sits mid-form, and a
                   same-tab navigation would discard everything already typed —
                   the form state is not persisted. The visually hidden note is
@@ -376,15 +436,15 @@ export function InterestForm() {
                 aria-hidden="true"
                 className="h-4 w-4 animate-spin rounded-full border-2 border-cream/35 border-t-cream"
               />
-              {interest.submittingLabel}
+              {enquiry.submittingLabel}
             </>
           ) : (
-            interest.submitLabel
+            enquiry.submitLabel
           )}
         </Button>
 
         <p className="mt-4 text-sm leading-relaxed text-bark">
-          {interest.footnote}
+          {enquiry.footnote}
         </p>
       </div>
     </form>
@@ -400,7 +460,6 @@ type FieldProps = {
   hint?: string;
   optional?: boolean;
   error?: string;
-  describedBy?: string;
   /** Full width on the two-column desktop grid. */
   span?: boolean;
   children: React.ReactNode;
@@ -503,10 +562,7 @@ function Checkbox({
       </div>
 
       {error ? (
-        <p
-          id={errorId}
-          className="mt-1.5 pl-8 text-sm text-[#7c2d12]"
-        >
+        <p id={errorId} className="mt-1.5 pl-8 text-sm text-[#7c2d12]">
           {error}
         </p>
       ) : null}
