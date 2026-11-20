@@ -6,7 +6,7 @@ import { ImageResponse } from "next/og";
 // is available.
 
 export const alt =
-  "BackHome — find trusted senior care in Cebu from overseas. Nursing homes, assisted living and home care, visited in person and priced.";
+  "BackHome — trusted elder care for your parents back home. Caregivers, home nurses and care homes in Cebu, each checked by our local team.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -50,7 +50,7 @@ export default function OpengraphImage() {
               maxWidth: "900px",
             }}
           >
-            Find trusted care back home when you can&rsquo;t be there
+            Trusted elder care for your parents back home.
           </div>
           <div
             style={{
@@ -62,8 +62,8 @@ export default function OpengraphImage() {
               fontFamily: "sans-serif",
             }}
           >
-            Nursing homes, assisted living, live-in caregivers and home-care
-            agencies in Cebu — visited in person, with real monthly prices.
+            Caregivers, home nurses, care homes and support services in Cebu.
+            Each one is checked by our local team.
           </div>
         </div>
 
@@ -75,7 +75,7 @@ export default function OpengraphImage() {
             fontFamily: "sans-serif",
           }}
         >
-          Starting in Metro Cebu · No cost to families
+          Cebu City · Mandaue · Lapu-Lapu · Talisay
         </div>
       </div>
     ),

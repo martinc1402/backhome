@@ -1,12 +1,19 @@
 import { SiteHeader } from "@/components/site-header";
-import { Hero } from "@/components/hero";
-import { ProblemSection } from "@/components/problem-section";
-import { ProcessSection } from "@/components/process-section";
-import { CareTypesSection } from "@/components/care-types-section";
-import { TrustSection } from "@/components/trust-section";
-import { FounderSection } from "@/components/founder-section";
-import { FinalCta } from "@/components/final-cta";
 import { SiteFooter } from "@/components/site-footer";
+import { Hero } from "@/components/home/hero";
+import { TrustStrip } from "@/components/home/trust-strip";
+import { CategoryTiles } from "@/components/home/category-tiles";
+import { Situations } from "@/components/home/situations";
+import { HowWeCheck } from "@/components/home/how-we-check";
+import { RecentlyChecked } from "@/components/home/recently-checked";
+import { PaidHelp } from "@/components/home/paid-help";
+import { GuidesSection } from "@/components/home/guides-section";
+import { FounderAndProviders } from "@/components/home/founder-and-providers";
+import { ClosingBand } from "@/components/home/closing-band";
+
+// The provider count and "Recently checked" depend on today's date (checks
+// lapse after six months), so regenerate daily. Must be a literal.
+export const revalidate = 86400;
 
 export default function Home() {
   return (
@@ -18,17 +25,19 @@ export default function Home() {
         Skip to main content
       </a>
 
-      <div id="top" />
       <SiteHeader />
 
       <main id="main" className="flex-1">
         <Hero />
-        <ProblemSection />
-        <ProcessSection />
-        <CareTypesSection />
-        <TrustSection />
-        <FounderSection />
-        <FinalCta />
+        <TrustStrip />
+        <CategoryTiles />
+        <Situations />
+        <HowWeCheck />
+        <RecentlyChecked />
+        <PaidHelp />
+        <GuidesSection />
+        <FounderAndProviders />
+        <ClosingBand />
       </main>
 
       <SiteFooter />

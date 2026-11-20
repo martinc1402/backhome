@@ -1,255 +1,177 @@
+import type { GuideSlug } from "@/content/guides";
+
 /* ---------------------------------------------------------------------------
-   BackHome — single source of truth for all page copy.
+   BackHome — site-wide copy and homepage copy.
 
    Everything the founders are likely to want to reword lives here, so the
-   section components stay purely presentational. Edit text in this file; you
-   should not need to touch any .tsx file to change wording.
+   section components stay presentational. Directory data (categories, areas,
+   listings) lives in content/directory/; guides in content/guides.ts.
 
-   Nothing on this page may claim a track record BackHome does not have yet: no
-   facility counts, no families helped, no testimonials, no partner logos, no
-   review scores. Nothing is listed and nobody has signed up. Every line here
-   has to stay true on the day it is read.
+   Never claim a track record BackHome does not have: no invented provider
+   counts, families helped, testimonials or review scores. The provider count
+   and "Recently checked" are computed from the real listings.
 --------------------------------------------------------------------------- */
-
-export type IconName =
-  | "calendar"
-  | "check-in"
-  | "wrench"
-  | "recovery"
-  | "shield"
-  | "receipt"
-  | "heart"
-  | "scope"
-  | "visit"
-  | "pill"
-  | "home"
-  | "warning";
 
 export const site = {
   name: "BackHome",
-  tagline: "Find trusted senior care in Cebu",
+  url: "https://backhome.ph",
   contactEmail: "hello@backhome.ph",
-  serviceArea: "Cebu, Philippines",
+  serviceArea: "Metro Cebu, Philippines",
 } as const;
 
 export const nav = {
   links: [
-    { label: "How it works", href: "#how-it-works" },
-    { label: "Care types", href: "#care-types" },
-    { label: "Why BackHome", href: "#why-backhome" },
+    { label: "Find care", href: "/#find-care" },
+    { label: "Guides", href: "/guides" },
+    { label: "How we check", href: "/how-we-check" },
+    { label: "For providers", href: "/for-providers" },
   ],
-  cta: { label: "Get a shortlist", href: "mailto:hello@backhome.ph" },
+  cta: { label: "Get help finding care", href: "/help" },
 } as const;
 
 export const hero = {
-  eyebrow: "Starting in Cebu",
-  heading: "Find trusted care back home when you can't be there",
-  body: "BackHome helps overseas Filipinos find senior care in Cebu — nursing homes, assisted living, live-in caregivers and home-care agencies — with real monthly prices and visits in person, so you can choose with confidence from anywhere.",
-  primaryCta: { label: "Get a shortlist", href: "mailto:hello@backhome.ph" },
-  secondaryCta: { label: "See how it works", href: "#how-it-works" },
-  reassurance:
-    "We are starting in Metro Cebu and will grow as we verify more options.",
+  eyebrow: "Starting in Metro Cebu",
+  heading: "Trusted elder care for your parents back home.",
+  body: "Caregivers, home nurses, care homes and support services in Cebu. Each one is checked by our local team.",
+  search: {
+    needLabel: "What do they need?",
+    needPlaceholder: "Choose a type of care",
+    areaLabel: "Where?",
+    areaAll: "All of Metro Cebu",
+    button: "Search",
+  },
+  helpLink: { label: "Not sure what they need? Tell us what's happening", href: "/help" },
   /**
-   * Full-bleed hero background. Exactly one asset is fetched per viewport,
-   * never both — the gate is `<source media>`, not CSS, because a CSS-hidden
-   * <video> or <img> still downloads. See components/hero-media.tsx.
-   *
-   * The clip is a single one-shot reveal: an older parent's phone screen
-   * lighting up as a call comes through. It plays once and holds on the lit
-   * final frame. It has no audio track and is deliberately never looped —
-   * looping would hard-cut back to a dark screen every five seconds.
-   *
-   * Regenerate from the masters with the commands in design/README.md. Bump
-   * the .v1 suffix here and in the filename on any change: these are served
-   * with Cache-Control: immutable (next.config.ts).
+   * The existing hero still: an older parent's hands holding a phone as a call
+   * comes through. Portrait crop; the card uses object-cover.
    */
-  media: {
-    /** ≥768px only. */
-    video: {
-      src: "/media/hero-cebu-call.v1.mp4",
-      type: "video/mp4",
-      width: 1920,
-      height: 1070,
-      /** Documentation and QA only; the component does not read this. */
-      durationSeconds: 5.04,
-    },
-    /**
-     * The clip's FIRST frame, phone screen dark. Must be the first frame —
-     * a poster of the lit end state would visibly jump back to dark the
-     * instant playback starts.
-     */
-    poster: {
-      src: "/media/hero-cebu-call-poster.v1.jpg",
-      width: 960,
-      height: 536,
-    },
-    /**
-     * <768px. The clip's LAST frame, phone screen lit, pre-cropped to a
-     * portrait box around the hands. The crop is baked at asset-prep time
-     * because object-cover on the full landscape frame keeps only ~26% of its
-     * width on a phone and centres on empty wall.
-     */
-    mobileStill: {
-      src: "/media/hero-cebu-call-still.v1.jpg",
-      width: 1440,
-      height: 2618,
-    },
-    /**
-     * The media layer is decorative — the still carries alt="" and the video
-     * is aria-hidden (see components/hero-media.tsx). This is a brief for
-     * whoever recuts the footage, not rendered copy.
-     */
-    description:
-      "An older parent in Cebu sitting with a phone held in both hands; the screen lights up as a call comes through from family overseas. Warm sunlit wall behind.",
+  image: {
+    src: "/media/hero-cebu-call-still.v1.jpg",
+    width: 1440,
+    height: 2618,
+    alt: "An older parent in Cebu holding a phone as a call from family comes through.",
   },
 } as const;
 
-export const problem = {
-  /** Opens the section as a standalone statement line, above the heading. */
-  lead: "Visited in person. Real prices. Less guesswork from afar.",
-  heading: "Choosing care from overseas is harder than it should be",
-  intro:
-    "Most homes and agencies in Cebu only exist on Facebook. Prices are rarely published. Visiting is not an option when you are thousands of kilometres away.",
-  cards: [
-    {
-      icon: "check-in" as IconName,
-      title: "Mum can't live alone anymore",
-      body: "You need to know which homes take her care level, what they cost, and whether they have a place.",
-    },
-    {
-      icon: "recovery" as IconName,
-      title: "Dad is coming out of hospital",
-      body: "You need care in place within days, without knowing who is reliable.",
-    },
-    {
-      icon: "visit" as IconName,
-      title: "We need a live-in caregiver",
-      body: "Agencies, freelancers and referrals from relatives all cost different amounts, and you cannot check them yourself.",
-    },
-    {
-      icon: "home" as IconName,
-      title: "We're comparing homes from overseas",
-      body: "Photos on a Facebook page do not tell you about staffing, cleanliness or what is billed as extra.",
-    },
+export const trustStrip = {
+  points: [
+    "Every listing shows how and when we checked it",
+    "Permits and licences checked",
+    "Families can report a problem on any listing",
   ],
+  /** Shown instead of the count while no provider has a current check. */
+  noneYet: "We're checking our first providers now.",
 } as const;
 
-export const process = {
-  heading: "The legwork you'd do yourself if you were there",
+export const findCare = {
+  eyebrow: "Find care",
+  heading: "What do they need?",
+  comingSoon: "Coming soon",
+} as const;
+
+export const situations = {
+  eyebrow: "Not sure where to start?",
+  heading: "Start from what's happening",
+  cta: "Read the guide",
+  cards: [
+    {
+      title: "Dad's just been discharged",
+      body: "What to arrange in the first two weeks at home, and who can help.",
+      guide: "leaving-hospital",
+    },
+    {
+      title: "Mum is getting forgetful",
+      body: "Where to get a memory assessment, and how to find carers with dementia experience.",
+      guide: "memory-loss-and-dementia",
+    },
+    {
+      title: "Our caregiver quit suddenly",
+      body: "Short-term cover while you find someone permanent.",
+      guide: "when-a-caregiver-quits",
+    },
+    {
+      title: "I need someone to check in each week",
+      body: "Visiting carers, and BackHome check-in visits with updates for you.",
+      guide: "weekly-check-ins",
+    },
+  ] satisfies { title: string; body: string; guide: GuideSlug }[],
+} as const;
+
+export const howWeCheck = {
+  eyebrow: "How we check",
+  heading: "You shouldn't have to take a stranger's word for it",
   steps: [
     {
       number: "01",
-      title: "Tell us about your parent",
-      body: "Where they are, what care they need, your timing and budget.",
+      title: "We call and visit",
+      body: "Our Cebu team speaks to every provider, and visits in person before a listing gets the Visited badge.",
     },
     {
       number: "02",
-      title: "We shortlist verified options",
-      body: "Places and agencies we have called and visited, with monthly prices and what is included.",
+      title: "We check permits and licences",
+      body: "Business permits, PRC licences for nurses and therapists, and DOH or DSWD licences where they apply.",
     },
     {
       number: "03",
-      title: "You choose, we arrange",
-      body: "Video tours, introductions and the practical next steps.",
+      title: "We re-check every 6 months",
+      body: "Badges lapse if they aren't renewed, and every listing shows the date we last checked it.",
     },
   ],
-  note: "During the pilot we handle each family personally.",
+  key: [
+    { level: "visited", label: "Visited", text: "Seen in person" },
+    { level: "called", label: "Called", text: "Checked by phone and online" },
+    { level: "listed", label: "Listed", text: "Added by the provider, not yet checked" },
+  ],
+  link: { label: "Read how we check", href: "/how-we-check" },
 } as const;
 
-export const careTypes = {
-  heading: "Care we are verifying in Metro Cebu",
-  intro:
-    "For each option we confirm monthly rates, care levels accepted, nurse coverage and vacancies, and visit in person where we can.",
-  /**
-   * Four categories, not a service menu. These are deliberately NOT links:
-   * there are no listing pages yet, and a tile that goes nowhere is worse than
-   * a tile that plainly does not move. See components/care-types-section.tsx.
-   */
-  cards: [
-    {
-      icon: "home" as IconName,
-      title: "Nursing homes and assisted living",
-      body: "Residential places where your parent lives on site, with staff on hand day and night.",
-    },
-    {
-      icon: "visit" as IconName,
-      title: "Live-in caregivers",
-      body: "One carer who lives in the family home and looks after your parent day to day.",
-    },
-    {
-      icon: "calendar" as IconName,
-      title: "Home-care agencies (shift-based)",
-      body: "Carers who come to the house for set hours or shifts, arranged through an agency.",
-    },
-    {
-      icon: "recovery" as IconName,
-      title: "Post-hospital care",
-      body: "Short-term care after a hospital stay, at home or in a residential place, while your parent recovers.",
-    },
-  ],
-  disclaimer:
-    "BackHome is not a care provider. We do not give medical advice, provide emergency response or regulated clinical services. We verify options and help you choose.",
+export const recentlyChecked = {
+  eyebrow: "The directory",
+  heading: "Recently checked in Cebu",
+  /** Shown while no provider has a current check. */
+  empty:
+    "Our first checks are under way. Providers will appear here as soon as our Cebu team has called or visited them.",
 } as const;
 
-export const trust = {
-  heading: "You should not have to choose from a Facebook page",
-  principles: [
-    {
-      icon: "visit" as IconName,
-      title: "Visited in person",
-      body: "Dated visit notes and photos, staff on shift, what the place is actually like.",
-    },
-    {
-      icon: "receipt" as IconName,
-      title: "Real prices",
-      body: "Monthly rates confirmed by phone, including what is billed as extra.",
-    },
-    {
-      icon: "heart" as IconName,
-      title: "Honest about money",
-      body: "Facilities may pay us a referral fee. Families never pay, and fees never change what we show you.",
-    },
-    {
-      icon: "scope" as IconName,
-      title: "Clear boundaries",
-      body: "We are not a care provider and will say so when a need is beyond what we can help with.",
-    },
+export const paidHelp = {
+  eyebrow: "BackHome help",
+  heading: "Too far away to do the legwork?",
+  body: "Tell us what's happening. We'll shortlist providers, visit them, and send you a report with photos and notes. Then we can arrange regular check-in visits.",
+  points: [
+    "A shortlist of 3 checked providers",
+    "In-person visits, with photos and notes",
+    "Check-in visits, and someone to go with your parent to appointments",
   ],
-  /**
-   * Real photograph, not a placeholder. Served with Cache-Control: immutable
-   * (next.config.ts), so bump the version suffix on any recrop or re-export.
-   *
-   * v3 trims 64px off the right edge of the delivered frame. The master ends
-   * on a sunlit door jamb — flat, blown out and almost featureless — which at
-   * the container's crop read as a white border rather than as part of the
-   * room. See design/README.md for the crop command.
-   */
-  image: {
-    src: "/media/trust-coordinator.v3.webp",
-    width: 1216,
-    height: 1589,
-    alt: "A local coordinator sitting and laughing with an older couple on the shaded porch of their home in Cebu.",
+  cta: { label: "Get help finding care", href: "/help" },
+  // PLACEHOLDER: set the real starting price.
+  price: "From [YOUR PRICE]",
+  sampleReport: {
+    label: "Sample visit report",
+    title: "What you receive",
+    rows: ["Date visited", "Licences seen", "Nurse on site", "Price quoted"],
+    note: "Two or three plain sentences from the person who visited.",
   },
 } as const;
 
+export const guidesSection = {
+  eyebrow: "Guides",
+  heading: "Plain answers for families",
+  all: { label: "All guides", href: "/guides" },
+  featured: [
+    "elder-care-costs-cebu",
+    "checking-a-caregiver-from-overseas",
+    "leaving-hospital",
+  ] satisfies GuideSlug[],
+} as const;
+
 export const founder = {
+  eyebrow: "Our story",
   heading: "Built between Australia and Cebu",
-  paragraphs: [
-    "BackHome was created by Yahnee and Martin, a Filipino-Australian family based in Australia.",
-    "The idea came from seeing how hard it is to find and compare care for a parent from overseas, when the only options are a Facebook page and a relative's recommendation.",
-    "We visit Cebu regularly and are building BackHome by calling and visiting homes and agencies ourselves.",
-  ],
-  note: "We are starting in Cebu, visiting homes ourselves and speaking with families before we list anything.",
+  body: "BackHome was started by Yahnee and Martin, a Filipino-Australian family based in Australia. We know how hard it is to find care for a parent from far away, when the only options are a Facebook page and a relative's recommendation, so we're building the list we wished we had.",
   /**
-   * Real photograph, not a placeholder. Served with Cache-Control: immutable
-   * (next.config.ts) — bump the version suffix on any change, and never
-   * overwrite a version already served.
-   *
-   * NOTE: this is a pharmacy pickup, not a portrait of the founders. The alt
-   * text describes what is actually in the frame rather than naming Yahnee and
-   * Martin, because the people shown are not them. It stays here as the only
-   * remaining slot for it now that the old services section is gone; if a real
-   * founder portrait arrives, this slot should take it.
+   * The existing founder-slot photo. NOTE: this is a pharmacy pickup, not the
+   * founders, and the alt text says so. Swap in a real founder portrait when
+   * one exists (public/media, with a version suffix).
    */
   image: {
     src: "/media/pharmacy-pickup.v1.webp",
@@ -259,21 +181,33 @@ export const founder = {
   },
 } as const;
 
-export const finalCta = {
+export const providersCard = {
+  eyebrow: "For providers",
+  heading: "Run a care service in Cebu?",
+  body: "Get listed for free. Families here and abroad are looking for caregivers, nurses and care homes they can trust.",
+  cta: { label: "List your service", href: "/for-providers" },
+} as const;
+
+export const closing = {
   heading: "You may be overseas. Your responsibilities are still back home.",
-  body: "BackHome does the legwork in Cebu so you can choose care with confidence.",
-  cta: { label: "Tell us about your parent", href: "mailto:hello@backhome.ph" },
-  note: "No cost to families. No obligation.",
+  body: "Find checked elder care in Cebu, or let us help you find it.",
+  primary: { label: "Find care in Cebu", href: "/#find-care" },
+  secondary: { label: "Get help finding care", href: "/help" },
 } as const;
 
 export const footer = {
   description:
-    "BackHome helps overseas Filipinos find senior care in Cebu — nursing homes, assisted living, live-in caregivers and home-care agencies — with real prices and visits in person.",
-  serviceAreaLabel: "Service area",
-  links: [
+    "BackHome is a checked directory of elder care services in Cebu, for Filipino families near and far.",
+  backhomeLinks: [
+    { label: "Guides", href: "/guides" },
+    { label: "How we check", href: "/how-we-check" },
+    { label: "Get help finding care", href: "/help" },
+    { label: "For providers", href: "/for-providers" },
+  ],
+  contactLinks: [
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },
   ],
   disclaimer:
-    "BackHome is not a care provider. We are starting in Metro Cebu and nothing is listed yet.",
+    "BackHome is a directory, not a care provider. We don't provide medical or emergency services. Please make your own checks before hiring anyone.",
 } as const;

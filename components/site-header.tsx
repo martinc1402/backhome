@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { nav, site } from "@/content/site";
@@ -8,40 +10,34 @@ import { BackHomeMark } from "@/components/ui/icon";
 
 type SiteHeaderProps = {
   /**
-   * Set on pages that have no hero — the legal pages.
-   *
-   * Two things change, and both are bugs without it:
-   *
-   *   1. The sentinel below is pinned to top-0, so on a page with no hero it is
-   *      intersecting at scroll-top and the header would flip to its
-   *      transparent state: cream text on a cream page, invisible.
-   *   2. The logo points at #top and the nav at #how-it-works, which resolve to
-   *      nothing anywhere except the homepage. Standalone pages get absolute
-   *      paths so both actually navigate.
-   *
-   * Defaults to false, so <SiteHeader /> on the homepage takes every code path
-   * it did before this prop existed and renders identical markup.
+   * Set on pages with no dark hero. The header is then permanently solid;
+   * without this, the sentinel below would be in view at scroll-top and flip
+   * the header to cream-on-transparent over a cream page.
    */
   standalone?: boolean;
 };
 
 /**
- * Fixed header that floats transparently over the dark hero image, then takes
- * a solid cream background once the hero has scrolled away.
+ * Fixed header. On the homepage it floats transparently over the dark-green
+ * hero, then turns solid cream once the hero scrolls away. Driven by an
+ * IntersectionObserver on a sentinel rather than a scroll listener.
  *
- * Driven by an IntersectionObserver watching a sentinel element rather than a
- * scroll listener, so there is no per-frame work on the main thread.
+ * It starts SOLID and only goes transparent once the observer confirms the
+ * sentinel is visible, so if JavaScript never runs it stays legible.
  *
- * It starts in the *solid* state and only goes transparent once the observer
- * confirms the sentinel is visible. That way, if JavaScript never runs, the
- * header stays legible rather than rendering cream text on a cream page.
+ * Below md the links move into a menu opened by a button.
  */
 export function SiteHeader({ standalone = false }: SiteHeaderProps = {}) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [overHero, setOverHero] = useState(false);
+  const pathname = usePathname();
+  // The menu remembers which page it was opened on, so it closes itself
+  // whenever the route changes, with no effect needed.
+  const [menuPath, setMenuPath] = useState<string | null>(null);
+  const menuOpen = menuPath === pathname;
+  const setMenuOpen = (open: boolean) => setMenuPath(open ? pathname : null);
 
   useEffect(() => {
-    // Nothing to observe on a standalone page: the header is permanently solid.
     if (standalone) return;
 
     const sentinel = sentinelRef.current;
@@ -56,14 +52,11 @@ export function SiteHeader({ standalone = false }: SiteHeaderProps = {}) {
     return () => observer.disconnect();
   }, [standalone]);
 
-  // Hash targets only exist on the homepage, so off it they need the path.
-  const homeHref = standalone ? "/" : "#top";
-  const hrefFor = (href: string) =>
-    standalone && href.startsWith("#") ? `/${href}` : href;
+  // With the menu open the header is always solid, whatever is behind it.
+  const dark = overHero && !menuOpen;
 
   return (
     <>
-      {/* Sits just inside the hero; visible only while the hero is in view. */}
       {standalone ? null : (
         <div
           ref={sentinelRef}
@@ -74,70 +67,80 @@ export function SiteHeader({ standalone = false }: SiteHeaderProps = {}) {
 
       <header
         className={`fixed inset-x-0 top-0 z-50 motion-safe:transition-colors motion-safe:duration-300 ${
-          overHero
+          dark
             ? "on-dark bg-transparent text-cream"
-            : "border-b border-line bg-cream/90 text-bark backdrop-blur-md"
+            : "border-b border-line bg-cream/95 text-bark backdrop-blur-md"
         }`}
       >
-        {/* Top scrim for the transparent state. Without it the wordmark and
-            nav sit at ~4.4:1 over the hero's bright sky — right on the AA
-            threshold, and a lighter photograph would push them under it.
-            This makes header legibility independent of the image. */}
-        {overHero ? (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-32 bg-gradient-to-b from-forest/60 to-transparent"
-          />
-        ) : null}
-
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8 sm:py-5">
-          {/* The lockup is a single colour, so the colour is set once here and
-              both the mark and the wordmark inherit it — the mark's SVG is
-              drawn in currentColor. Forest rather than the header's own bark:
-              bark is the nav-link colour sitting right beside it, which would
-              flatten the logo into the navigation.
-
-              It carries its own transition because it now overrides the
-              header's inherited colour; without this the lockup would snap
-              between states while everything around it fades. */}
-          <a
-            href={homeHref}
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
+          <Link
+            href="/"
             className={`flex shrink-0 items-center gap-2.5 motion-safe:transition-colors motion-safe:duration-300 ${
-              overHero ? "text-cream" : "text-forest"
+              dark ? "text-cream" : "text-forest"
             }`}
-            aria-label={`${site.name} — back to top`}
+            aria-label={`${site.name} home`}
           >
             {/* Height-sized, not square: the mark is portrait (22×31). */}
             <BackHomeMark className="h-7 w-auto" />
-            {/* PLACEHOLDER: text wordmark, pending a real logotype. */}
-            <span className="font-serif text-[1.375rem] tracking-tight">
-              {site.name}
-            </span>
-          </a>
+            <span className="font-serif text-[1.375rem] tracking-tight">{site.name}</span>
+          </Link>
 
-          <nav
-            aria-label="Primary"
-            className="hidden items-center gap-9 md:flex"
-          >
+          <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
             {nav.links.map((link) => (
-              <a
+              <Link
                 key={link.href}
-                href={hrefFor(link.href)}
+                href={link.href}
                 className="text-sm opacity-80 motion-safe:transition-opacity hover:opacity-100"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
-          <ButtonLink
-            href={hrefFor(nav.cta.href)}
-            variant={overHero ? "onDark" : "solid"}
-            size="md"
-          >
-            {nav.cta.label}
-          </ButtonLink>
+          <div className="flex items-center gap-2">
+            {/* Wrapped, because the button's own inline-flex would beat a
+                `hidden` class on the same element. */}
+            <span className="hidden sm:block">
+              <ButtonLink href={nav.cta.href} variant={dark ? "onDark" : "solid"} size="md">
+                {nav.cta.label}
+              </ButtonLink>
+            </span>
+
+            <button
+              type="button"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-pill md:hidden"
+              aria-expanded={menuOpen}
+              aria-controls="site-menu"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden="true">
+                {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+              </svg>
+            </button>
+          </div>
         </div>
+
+        {menuOpen ? (
+          <nav id="site-menu" aria-label="Menu" className="border-t border-line px-5 pt-2 pb-6 md:hidden">
+            <ul className="flex flex-col">
+              {nav.links.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="block border-b border-line py-3.5 text-forest"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <ButtonLink href={nav.cta.href} variant="solid" size="md" className="mt-5 w-full">
+              {nav.cta.label}
+            </ButtonLink>
+          </nav>
+        ) : null}
       </header>
     </>
   );

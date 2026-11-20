@@ -102,9 +102,14 @@ export function realListings(): Listing[] {
  * holds at least one real listing. Empty pages are thin content, and a page
  * holding only samples is test data. The sitemap uses the same rule.
  */
-export function hasRealListings(category: string, area?: string): boolean {
+export function hasRealListings(
+  category: string | undefined,
+  area?: string,
+): boolean {
   return realListings().some(
-    (l) => l.category === category && (area === undefined || l.area === area),
+    (l) =>
+      (category === undefined || l.category === category) &&
+      (area === undefined || l.area === area),
   );
 }
 
