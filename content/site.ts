@@ -38,14 +38,14 @@ export const nav = {
     { label: "Care types", href: "#care-types" },
     { label: "Why BackHome", href: "#why-backhome" },
   ],
-  cta: { label: "Get a shortlist", href: "#get-a-shortlist" },
+  cta: { label: "Get a shortlist", href: "mailto:hello@backhome.ph" },
 } as const;
 
 export const hero = {
   eyebrow: "Starting in Cebu",
   heading: "Find trusted care back home when you can't be there",
   body: "BackHome helps overseas Filipinos find senior care in Cebu — nursing homes, assisted living, live-in caregivers and home-care agencies — with real monthly prices and visits in person, so you can choose with confidence from anywhere.",
-  primaryCta: { label: "Get a shortlist", href: "#get-a-shortlist" },
+  primaryCta: { label: "Get a shortlist", href: "mailto:hello@backhome.ph" },
   secondaryCta: { label: "See how it works", href: "#how-it-works" },
   reassurance:
     "We are starting in Metro Cebu and will grow as we verify more options.",
@@ -259,41 +259,10 @@ export const founder = {
   },
 } as const;
 
-export const enquiry = {
-  heading: "Tell us about your parent",
-  intro:
-    "We will send verified options as we confirm them, and can talk it through on a call. There is no cost to families.",
-  submitLabel: "Get a shortlist",
-  submittingLabel: "Sending…",
-  footnote: "No payment is required. We will reply personally.",
-  success: {
-    heading: "Thank you — we have your details",
-    body: "We will send verified care options as we confirm them, and we will reply personally. If you asked for a call, we will suggest a time.",
-    footnote: "There is no cost to families and no payment is required.",
-  },
-  // Two things people reasonably want to know before typing anything: who pays
-  // us, and where we actually operate. Both are settled, so this block states
-  // them rather than hedging. Shown beside the form in both its empty and
-  // submitted states.
-  practicalities: {
-    label: "Practical details",
-    items: [
-      {
-        title: "How we are paid",
-        body: "Facilities may pay us a referral fee once a resident has settled in. Families never pay, and a fee never affects what we show you or the order we show it in.",
-      },
-      {
-        title: "Service area",
-        body: "Metro Cebu for now — Cebu City, Mandaue, Lapu-Lapu and the towns around them. We will grow as we verify more of the province.",
-      },
-    ],
-  },
-} as const;
-
 export const finalCta = {
   heading: "You may be overseas. Your responsibilities are still back home.",
   body: "BackHome does the legwork in Cebu so you can choose care with confidence.",
-  cta: { label: "Tell us about your parent", href: "#get-a-shortlist" },
+  cta: { label: "Tell us about your parent", href: "mailto:hello@backhome.ph" },
   note: "No cost to families. No obligation.",
 } as const;
 

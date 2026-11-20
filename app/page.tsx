@@ -5,7 +5,6 @@ import { ProcessSection } from "@/components/process-section";
 import { CareTypesSection } from "@/components/care-types-section";
 import { TrustSection } from "@/components/trust-section";
 import { FounderSection } from "@/components/founder-section";
-import { EnquirySection } from "@/components/enquiry-section";
 import { FinalCta } from "@/components/final-cta";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -29,7 +28,6 @@ export default function Home() {
         <CareTypesSection />
         <TrustSection />
         <FounderSection />
-        <EnquirySection />
         <FinalCta />
       </main>
 
