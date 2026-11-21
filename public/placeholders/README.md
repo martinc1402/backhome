@@ -39,17 +39,18 @@ hospital settings, staged "concerned carer" poses, or generic corporate stock.
 
 Still outstanding:
 
-| File | Slot | Size | Intended photograph |
-| --- | --- | --- | --- |
-| `hero-family-call.svg` | Hero, **full-bleed background** | 1920×1080 | An adult child living overseas on a video call with their parents at home in Cebu. Both sides relaxed and smiling. Could equally be a real visit or a warm local support interaction. Needs a wide landscape crop with the subject off-centre — a dark scrim sits over it and the headline is centred on top, so avoid busy detail in the middle. |
-| *(brief still open)* | Founder story, left column | square | Yahnee and Martin together. Relaxed and personal, not a corporate headshot. **The slot is not empty — it currently holds `pharmacy-pickup.v1.webp`, which is a service scene, not the founders.** Swap it in when a real portrait exists. |
+| Slot | Size | Intended photograph |
+| --- | --- | --- |
+| Founder story (homepage) | square | Yahnee and Martin together. Relaxed and personal, not a corporate headshot. The card is text-only until this exists; add an `image` to `founder` in `content/site.ts` and render it in `components/home/founder-and-providers.tsx`. |
+| Listing photos | 3:2 | Real photos from Visited checks. Until then, listings without photos show "No photos yet"; `listing-photo.svg` is used by the sample listings only. |
 
-Already shot:
+In use:
 
-- **Trust & accountability** — `public/media/trust-coordinator.v3.webp` (1216×1589).
-- **Founder story** — `public/media/pharmacy-pickup.v1.webp` (1280×1280), as a
-  stand-in only; see the note above. This photograph is a better fit for
-  "Medication and essential pickups" in the services section.
+- **Homepage hero** — `public/media/hero-cebu-call-still.v1.jpg`.
+
+Removed in the directory rebuild (recoverable from git history before the
+`directory-pivot` merge): the hero video and its poster, the trust photo
+(`trust-coordinator.v3.webp`) and the pharmacy photo (`pharmacy-pickup.v1.webp`).
 
 The Open Graph share card is generated at build time from
 `app/opengraph-image.tsx` (a typographic card, so it needs no photo). Replace

@@ -1,134 +1,143 @@
 # Privacy Policy
 
-**Last updated: 5 August 2026**
+**Last updated: [CHECK: date this version is published]**
 
 ## 1. About this policy
 
 BackHome ("BackHome", "we", "us", "our") is operated by Kaya Virtual (ABN 84 263 783 878), based in Canberra, Australia.
 
-We are currently in a pre-launch phase. We are collecting expressions of interest from people who may want to use our service in future, and speaking with families to understand what would be useful. We are not yet delivering services.
+BackHome is a directory of elder care services in Metro Cebu, Philippines. We also offer paid help to families who want us to shortlist and visit providers for them.
 
-This policy explains what personal information we collect, why we collect it, how we handle it, and what rights you have.
+This policy explains what personal information we collect, why, who receives it, how long we keep it, and how to ask us to delete it.
 
-We handle personal information in accordance with the Australian Privacy Act 1988 (Cth) and the Australian Privacy Principles. Because our intended service operates in the Philippines, we also aim to handle personal information consistently with the Philippine Data Privacy Act of 2012 (RA 10173).
+We handle personal information in accordance with the Australian Privacy Act 1988 (Cth) and the Australian Privacy Principles. Because our service operates in the Philippines, we also aim to handle personal information consistently with the Philippine Data Privacy Act of 2012 (RA 10173).
 
-## 2. What information we collect
+## 2. What we collect
 
-### Information you give us directly
+### "Get help finding care" form (on /help)
 
-When you express interest through our website, we may collect:
+When you ask us for help, we collect:
 
-- Your full name
+- Your name
 - Your email address
-- Your phone or WhatsApp number (optional)
-- The country you currently live in
-- The area in Cebu where your family or property is located
-- Your relationship to the person or people you are asking about
-- A free-text description of your situation
-- Which service you would be most likely to use
-- Whether you consent to a short research call
-- Whether you consent to us contacting you about BackHome
+- Your WhatsApp number, if you choose to give it
+- The country you live in
+- Where in Cebu your parent lives (one of Cebu City, Mandaue, Lapu-Lapu, Talisay, or "somewhere else in Cebu")
+- What kind of help you're looking for (a type of care, or "not sure")
+- What you tell us in the "What's happening?" box
+- If you came to the form from a provider's listing, which listing that was
 
-### Information about other people
+### "List your service" form (on /for-providers)
 
-Our form asks about your family situation. In answering, you may give us information about other people — often an elderly parent or relative in Cebu.
+When a care provider asks to be listed, we collect:
 
-**This is important.** That person has not filled in our form and has not consented to us holding information about them. Before you tell us about someone else, please consider whether they would be comfortable with that. Share only what is necessary, and avoid sensitive details such as medical diagnoses, medication, or financial information at this stage.
+- The business name
+- A contact person's name
+- An email address
+- A phone or WhatsApp number
+- The type of service and the area it covers
+- A website or Facebook page, if given
+- A short description of the service
 
-If we later begin providing services, we will ask for that person's consent directly where it is practicable to do so, and we will explain to them what we hold and why.
+### Emails you send us
 
-If you are that person, or you act for them, and you would like to know what we hold or ask us to delete it, contact us using the details in section 12.
+If you email us, for example to report a problem with a listing, give feedback on a provider, or ask about your data, we receive whatever you include in that email.
 
 ### Information collected automatically
 
-When you visit our website we may collect standard technical information such as your IP address, browser type, device type, referring page, and pages viewed. We use this to understand how the site is used and to keep it working properly.
+Like most websites, our hosting provider records standard technical information when you visit, such as your IP address, browser type and the pages you request. We use it to keep the site working and secure.
 
-## 3. Why we collect it
+To protect the forms from spam, we use:
 
-We use personal information to:
+- **A bot check (Vercel BotID).** When you send a form, your browser completes a check that looks at technical signals from your browser to tell people from automated programs. [CHECK: confirm with Vercel's documentation exactly what BotID collects and whether it sets any cookies.]
+- **A rate limit.** We count how many forms have recently been sent from your IP address. The address is turned into a one-way code first, held only in our server's temporary memory, and never written to storage.
 
-- Contact you about the Cebu pilot and let you know when places open
-- Understand what support families actually need, so we design the right service
-- Arrange and conduct short research conversations, where you have agreed to one
-- Assess where in Cebu we should operate first
-- Improve our website
+We do not use advertising or analytics cookies. [CHECK: still true if analytics is added later.]
+
+## 3. Information about your parent or relative
+
+The help form asks about your family's situation, so you will be telling us about someone else, usually an older parent in Cebu. They have not filled in the form themselves.
+
+Please share only what we need to help. **We do not need medical details, a diagnosis, a medication list or medical records, and the form asks you not to include them.** A general description, like "Dad is home from hospital and needs help with bathing", is enough.
+
+If anything you tell us is health information, it is sensitive information under the Australian Privacy Act and sensitive personal information under the Philippine Data Privacy Act. By sending the form, you consent to us using it for the single purpose of helping you find care. [CHECK: whether an explicit consent tick-box is needed for sensitive information, rather than consent by sending the form.]
+
+If you are the person being described, or you act for them, you can ask us what we hold and ask us to delete it (see section 9).
+
+## 4. Why we collect it
+
+We use what you send us to:
+
+- Reply to you and talk through what your family needs
+- Shortlist, contact and visit care providers for you, if you ask us to
+- Review and publish a provider's listing, after confirming the details with them
+- Look into problems reported about a listing
+- Keep the website working and protect the forms from spam
 - Meet our legal obligations
 
-We do not sell personal information. We do not share it with advertisers.
+We do not sell personal information, and we do not share it with advertisers.
 
-## 4. Consent and how to withdraw it
+## 5. Who receives it
 
-We rely on your consent to contact you about BackHome. You gave that consent by ticking the relevant box on our form.
+**Form submissions are not stored on our website.** When you send a form, it goes straight to our email inbox:
 
-You can withdraw it at any time by emailing us, or by using the unsubscribe link in any email we send. Withdrawing consent will not affect anything we did lawfully before you withdrew it.
+- **Resend** (resend.com), an email delivery service, sends the form to us. It processes the submission to deliver it, and keeps delivery records for a limited time. Resend is based in the United States. [CHECK: Resend's current retention period for email content and logs.]
+- **Our email provider** stores the message in the hello@backhome.ph inbox. [CHECK: name the email provider that hosts hello@backhome.ph, and where it stores data.]
+- **Vercel** (vercel.com) hosts the website, runs the bot check, and keeps standard server logs. Vercel is based in the United States.
 
-Agreeing to a research call is separate and optional. You can decline a call and still stay on our list.
+Beyond these services, we share your details only:
 
-## 5. Who we share information with
+- **With a care provider, when you have asked us to.** If you ask us to contact a provider for you, we tell you first what we will pass on, and share only what is needed. We never give a family's details to a provider so the provider can approach them.
+- **With professional advisers**, such as lawyers or accountants, where necessary.
+- **With government or law enforcement**, where the law requires it.
 
-We may share personal information with:
-
-- **Service providers** who help us operate — for example email delivery, form handling, cloud hosting, and analytics. These providers act on our instructions.
-- **Local coordinators in the Philippines**, once services begin, and only to the extent needed to carry out a task you have asked for.
-- **Professional advisers** such as lawyers or accountants, where necessary.
-- **Government or law enforcement**, where we are required by law.
-
-We will tell you before we share your information in any way not described here, unless we are legally prevented from doing so.
+**Provider listings.** If you are a provider, the business details on your listing (business name, services, area, prices, licences, business phone and website) are published on the site once you have confirmed them. We do not publish the contact person's personal name, email or phone unless you agree to it.
 
 ## 6. Sending information overseas
 
-BackHome operates between Australia and the Philippines. Personal information you give us may be stored or accessed in either country, and our service providers may store data in other countries including the United States.
-
-Before disclosing personal information overseas, we take reasonable steps to ensure the recipient handles it consistently with this policy and with applicable privacy law. Data protection laws in other countries may not be the same as those in your own.
+BackHome is run from Australia and serves families in the Philippines and elsewhere. Our service providers store data in other countries, including the United States. Before we disclose personal information overseas, we take reasonable steps to make sure the recipient handles it consistently with this policy and applicable privacy law. Privacy laws in other countries may differ from yours.
 
 ## 7. Security
 
-We take reasonable steps to protect personal information from misuse, loss, unauthorised access, modification, and disclosure. These include access controls, encryption in transit, and limiting access to people who need it.
+We take reasonable steps to protect personal information from misuse, loss and unauthorised access. Form submissions travel over encrypted connections, are not stored on the website, and are kept in an email account with restricted access. [CHECK: confirm two-factor authentication is on for the hello@backhome.ph inbox and the Resend account.]
 
-No system is completely secure. If a data breach occurs that is likely to cause serious harm, we will notify affected people and the relevant regulator as required by law.
+No system is completely secure. If a data breach is likely to cause serious harm, we will notify the people affected and the relevant regulator as the law requires.
 
 ## 8. How long we keep it
 
-We keep expression-of-interest information for as long as needed to run the pilot and follow up with you, and for a reasonable period afterwards.
+- **Help requests:** kept while we're helping you, then for [CHECK: e.g. 12 months] after our last contact, then deleted.
+- **Listing requests:** kept for as long as the provider is listed, and for [CHECK: e.g. 12 months] after a request is declined or a listing is removed.
+- **Problem reports and feedback:** kept while we look into them and for [CHECK: e.g. 2 years] afterwards, so we can see patterns.
+- **Server logs and delivery records:** kept by Vercel and Resend under their own retention periods. [CHECK]
 
-If the pilot does not proceed, or you ask us to remove you, we will delete or de-identify your information within a reasonable time, unless we are required to keep it by law.
+We may keep information longer if the law requires it.
 
-Notes from research conversations are kept in de-identified form where possible.
-
-## 9. Your rights
+## 9. Your rights, and how to ask us to delete your data
 
 You can ask us to:
 
-- **Access** the personal information we hold about you
-- **Correct** it if it is wrong or out of date
-- **Delete** it, subject to any legal obligation we have to keep it
+- **Tell you** what personal information we hold about you
+- **Correct** it if it is wrong
+- **Delete** it
 - **Stop contacting you**
-- **Object to** or **restrict** certain uses
-- **Receive a copy** of information you gave us, in a usable format
 
-We will respond within a reasonable time and will not charge you for making a request. We may need to verify your identity first.
+**To ask us to delete your data**, email **hello@backhome.ph** from the address you used, or tell us the name and email you gave, and say what you would like deleted. We will delete the emails and any notes we hold about you, and confirm by email when it's done, within [CHECK: e.g. 30 days]. We cannot delete copies already held in Resend's or Vercel's delivery records and logs before those expire, but we will not use them.
 
-## 10. Cookies and analytics
+We won't charge you for a request. We may need to confirm it's you before acting on it.
 
-Our website may use cookies and similar technologies to keep the site working and to understand how it is used. You can block or delete cookies in your browser settings, though some parts of the site may not work as well.
+## 10. Children
 
-## 11. Children
+The website is for adults. We do not knowingly collect personal information from anyone under 18. If you think a child has sent us their details, contact us and we'll delete them.
 
-Our website and service are intended for adults. We do not knowingly collect personal information from anyone under 18. If you believe a child has given us personal information, contact us and we will delete it.
+## 11. Contact and complaints
 
-## 12. Contact and complaints
+Questions, requests or complaints: **hello@backhome.ph**
 
-Questions, requests, or complaints:
+We aim to respond within 30 days. If you're not satisfied with our response, you can complain to:
 
-**Email:** hello@backhome.ph
+- **Australia:** Office of the Australian Information Commissioner (OAIC), oaic.gov.au
+- **Philippines:** National Privacy Commission (NPC), privacy.gov.ph
 
-We will acknowledge your complaint and aim to respond within 30 days.
+## 12. Changes to this policy
 
-If you are not satisfied with our response, you can complain to:
-
-- **Australia** — Office of the Australian Information Commissioner (OAIC), oaic.gov.au
-- **Philippines** — National Privacy Commission (NPC), privacy.gov.ph
-
-## 13. Changes
-
-We may update this policy as our service develops. We will post the updated version here and change the date at the top. If the changes are significant, we will tell you directly.
+We'll update this policy when our service changes. The current version is always on this page, with the date at the top.

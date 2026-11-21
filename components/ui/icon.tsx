@@ -1,10 +1,25 @@
-import type { IconName } from "@/content/site";
-
 /**
  * Small restrained line-icon set, inlined rather than pulled from an icon
- * library — there are twelve icons on the whole site and no dependency is
+ * library — there are a handful of icons on the whole site and no dependency is
  * worth it. All share a 24px grid, 1.5 stroke and currentColor.
  */
+export type IconName =
+  | "home"
+  | "nurse"
+  | "doctor"
+  | "building"
+  | "hospital"
+  | "pill"
+  | "car"
+  | "document"
+  | "check"
+  | "visit"
+  | "shield"
+  | "calendar"
+  | "warning"
+  | "arrow-right"
+  | "search";
+
 const paths: Record<IconName, React.ReactNode> = {
   calendar: (
     <>
@@ -13,47 +28,13 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M9 15h4" />
     </>
   ),
-  "check-in": (
-    <>
-      <path d="M21 12a9 9 0 1 1-3.6-7.2" />
-      <path d="M9 12l2.2 2.2L21 5" />
-    </>
-  ),
-  wrench: (
-    <>
-      <path d="M15.5 3a5.5 5.5 0 0 0-5 7.7L3.6 17.6a2 2 0 0 0 2.8 2.8l6.9-6.9A5.5 5.5 0 1 0 15.5 3z" />
-      <path d="M6.5 17.5h.01" />
-    </>
-  ),
-  recovery: (
-    <>
-      <path d="M3 12h4l2-4 3 8 2.5-5 1.5 3h5" />
-      <path d="M4 18h16" />
-    </>
-  ),
   shield: (
     <>
       <path d="M12 3l7.5 3v5.4c0 4.4-3 8.2-7.5 9.6C7.5 19.6 4.5 15.8 4.5 11.4V6z" />
       <path d="M9.5 12l1.8 1.8L15 10" />
     </>
   ),
-  receipt: (
-    <>
-      <path d="M5 3h14v18l-2.3-1.6L14.4 21l-2.4-1.6L9.6 21l-2.3-1.6L5 21z" />
-      <path d="M9 8h6M9 12h6" />
-    </>
-  ),
-  heart: (
-    <path d="M12 20s-7-4.4-7-9.3A4.2 4.2 0 0 1 12 7.6a4.2 4.2 0 0 1 7 3.1C19 15.6 12 20 12 20z" />
-  ),
-  scope: (
-    <>
-      <rect x="4" y="4" width="16" height="16" rx="3" />
-      <path d="M9 9h6v6H9z" />
-    </>
-  ),
-  // A person plus a confirmation tick — distinct from the `home` icon used
-  // for property checks.
+  // A person plus a confirmation tick.
   visit: (
     <>
       <circle cx="10" cy="7.5" r="3.5" />
@@ -72,6 +53,57 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M3.5 11L12 4l8.5 7" />
       <path d="M5.5 10V20h13V10" />
       <path d="M9.5 20v-5h5v5" />
+    </>
+  ),
+  nurse: (
+    <>
+      <circle cx="12" cy="7" r="3.5" />
+      <path d="M5 20.5c0-3.9 3.1-6.5 7-6.5s7 2.6 7 6.5" />
+      <path d="M12 15.5v4M10 17.5h4" />
+    </>
+  ),
+  doctor: (
+    <>
+      <path d="M6 3.5v5a4 4 0 0 0 8 0v-5" />
+      <path d="M10 12.5v2a5 5 0 0 0 10 0v-1.5" />
+      <circle cx="20" cy="11" r="2" />
+    </>
+  ),
+  building: (
+    <>
+      <path d="M4 20.5V8l8-4.5L20 8v12.5" />
+      <path d="M2.5 20.5h19" />
+      <path d="M10 20.5v-4h4v4" />
+      <path d="M8 10.5h.01M12 10.5h.01M16 10.5h.01" />
+    </>
+  ),
+  hospital: (
+    <>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
+      <path d="M12 8v8M8 12h8" />
+    </>
+  ),
+  car: (
+    <>
+      <path d="M5 16.5V12l2-5h10l2 5v4.5" />
+      <path d="M3.5 12h17v4.5h-17z" />
+      <circle cx="7.5" cy="18.5" r="1.5" />
+      <circle cx="16.5" cy="18.5" r="1.5" />
+    </>
+  ),
+  document: (
+    <>
+      <path d="M6 3h8l4 4v14H6z" />
+      <path d="M14 3v4h4" />
+      <path d="M9 12h6M9 16h4" />
+    </>
+  ),
+  check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
+  "arrow-right": <path d="M4 12h16M14 6l6 6-6 6" />,
+  search: (
+    <>
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="M16 16l4.5 4.5" />
     </>
   ),
   warning: (

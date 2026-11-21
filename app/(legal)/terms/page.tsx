@@ -5,7 +5,7 @@ import { renderLegalDoc } from "@/lib/legal-doc";
 export const metadata: Metadata = {
   title: "Terms of Use — BackHome",
   description:
-    "The terms that apply to using the BackHome website and expressing interest in the Cebu pilot, including what the service is and is not.",
+    "The terms for using the BackHome directory of elder care services in Cebu, the forms, and our paid help service.",
   alternates: { canonical: "/terms" },
   robots: { index: true, follow: true },
 };

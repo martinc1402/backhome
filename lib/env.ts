@@ -18,8 +18,8 @@ export function requireEnv(name: string): string {
 
   if (!value) {
     throw new Error(
-      `Missing required environment variable ${name}. The pilot interest form ` +
-        `cannot record submissions without it. Set it in .env.local for local ` +
+      `Missing required environment variable ${name}. A form ` +
+        `cannot send submissions without it. Set it in .env.local for local ` +
         `development, and with \`vercel env add\` for deployments.`,
     );
   }
