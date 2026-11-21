@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Newsreader } from "next/font/google";
+import { site } from "@/content/site";
 import "./globals.css";
 
 // Stands in for ABC Walter Neue (Dinamo), the commercial grotesque used on
@@ -22,10 +23,9 @@ const newsreader = Newsreader({
 });
 
 // metadataBase is required by Next 16 before any relative openGraph.images
-// path â omitting it is a build error, not a warning. It is also what the
-// canonical URLs on /privacy and /terms resolve against, so it has to be the
-// real domain now that those pages are set to index,follow.
-const siteUrl = "https://backhome.ph";
+// path. It is also what every canonical URL resolves against, so it must be
+// the primary domain: www (the apex redirects to it).
+const siteUrl = site.url;
 
 // One copy each, referenced by metadata, openGraph and twitter below. These
 // were three duplicated string literals and the copies had already drifted out

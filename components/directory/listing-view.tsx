@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { ListingJsonLd } from "@/components/directory/listing-json-ld";
 import { Breadcrumbs } from "@/components/directory/breadcrumbs";
 import { CheckBadge } from "@/components/directory/check-badge";
 import type { Listing } from "@/content/directory/types";
@@ -23,7 +24,7 @@ import {
 /** Body of /cebu/[category]/[provider-slug]. */
 export function ListingView({ listing }: { listing: Listing }) {
   const status = checkStatus(listing);
-  const url = `https://backhome.ph${listingHref(listing)}`;
+  const url = `${site.url}${listingHref(listing)}`;
 
   const reportHref =
     `mailto:${site.contactEmail}` +
@@ -32,6 +33,7 @@ export function ListingView({ listing }: { listing: Listing }) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
+      <ListingJsonLd listing={listing} />
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },

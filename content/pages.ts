@@ -102,3 +102,77 @@ export const providersPage = {
     },
   },
 } as const;
+
+export const howWeCheckPage = {
+  title: "How we check care providers in Cebu | BackHome",
+  description:
+    "What the Visited, Called and Listed badges mean, which permits and licences we look at, how often we re-check, and what happens when a family reports a problem.",
+  eyebrow: "How we check",
+  heading: "Every listing shows how and when we checked it",
+  intro:
+    "You shouldn't have to take a stranger's word for it. Each listing in the directory carries one of three levels, with the date we last checked it, so you can see exactly how much we know.",
+  levels: [
+    {
+      level: "visited",
+      label: "Visited",
+      title: "Seen in person",
+      body: "Someone from our Cebu team has been to the provider: the care home, the clinic, or the agency's office. We've met the people in charge, checked their permits and licences, asked the questions a family would ask, and taken photos.",
+    },
+    {
+      level: "called",
+      label: "Called",
+      title: "Checked by phone and online",
+      body: "We've spoken to the provider by phone, confirmed what they offer and roughly what it costs, and checked the permits and licences we can verify online. We haven't been in person yet.",
+    },
+    {
+      level: "listed",
+      label: "Listed",
+      title: "Not checked yet",
+      body: "The provider sent us their details and we've published them, but we haven't called or visited. Treat these as a starting point and do your own checks.",
+    },
+  ],
+  documents: {
+    heading: "What we look at",
+    intro: "Which documents apply depends on the kind of service. Where they apply, we ask to see:",
+    items: [
+      "A current business or mayor's permit from the city",
+      "PRC licences for nurses, therapists and doctors",
+      "A DOH licence for facilities that need one",
+      "DSWD registration or accreditation for residential care and day centres, where it applies",
+      "DOLE registration for agencies that place caregivers",
+    ],
+    // [CHECK] Confirm with the Cebu team which licence applies to which kind
+    // of provider before publishing this list as final.
+    note: "Each listing shows the licences we checked, their numbers, and the date we checked them. [CHECK: confirm which licence applies to which kind of provider.]",
+  },
+  lifecycle: {
+    heading: "Keeping checks current",
+    items: [
+      {
+        title: "We re-check every 6 months",
+        body: "A check is a snapshot. Prices, staff and licences change, so each badge is valid for 6 months from the date shown.",
+      },
+      {
+        title: "Badges lapse automatically",
+        body: "If we haven't re-checked a provider in 6 months, the badge changes to \"Check lapsed\" and shows when we last checked. The listing stays up, but it's no longer shown as checked.",
+      },
+      {
+        title: "Problems take the badge down",
+        body: "If a family reports a problem, we take the badge down and show the listing as \"Under review\" until we've looked into it. We talk to the family and the provider before deciding what to do.",
+      },
+    ],
+  },
+  limits: {
+    heading: "What a check is not",
+    body: "A check tells you what we saw and were told on the date shown. It isn't a guarantee about the quality of care, and it isn't medical advice. Please confirm prices and details with the provider, and visit or arrange a video call before you commit.",
+  },
+  money: {
+    heading: "Providers can't pay for a badge",
+    // [CHECK] Confirm this stays true.
+    body: "Listing is free, and a provider's check level and position in the directory don't depend on payment. [CHECK: confirm providers never pay to be listed, for placement or a referral fee.]",
+  },
+  report: {
+    heading: "Seen something wrong?",
+    body: "If a listing is out of date, or you've had a problem with a provider, tell us. Every listing has a \"Report a problem\" link, or you can email us directly.",
+  },
+} as const;

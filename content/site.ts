@@ -14,7 +14,8 @@ import type { GuideSlug } from "@/content/guides";
 
 export const site = {
   name: "BackHome",
-  url: "https://backhome.ph",
+  // The primary domain: backhome.ph redirects here.
+  url: "https://www.backhome.ph",
   contactEmail: "hello@backhome.ph",
   serviceArea: "Metro Cebu, Philippines",
 } as const;
