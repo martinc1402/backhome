@@ -68,6 +68,11 @@ export async function handleFormPost(kind: FormKind, request: Request): Promise<
     const verification = await checkBotId({
       developmentOptions: { isDevelopment: !process.env.VERCEL },
     });
+    // Flags only; no visitor data. Useful for confirming BotID is live.
+    console.info(
+      `[BackHome] ${kind} form: BotID isBot=${verification.isBot} ` +
+        `isHuman=${verification.isHuman} bypassed=${verification.bypassed}`,
+    );
     if (verification.isBot) {
       console.info(`[BackHome] ${kind} form: refused by BotID.`);
       return json({ ok: false, message: MESSAGES.bot }, 403);
