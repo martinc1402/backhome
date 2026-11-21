@@ -1,7 +1,6 @@
 import { interest } from "@/content/site";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { InterestForm } from "@/components/interest-form";
 
 /**
  * The primary conversion section. Server-rendered shell around the form, which
@@ -18,8 +17,18 @@ export function InterestSection() {
           align="center"
         />
 
-        <div className="mt-14">
-          <InterestForm />
+        {/* The pilot form posted to a database that no longer exists, so it
+            is replaced by email until the new site launches. */}
+        <div className="mt-14 rounded-card border border-line-strong bg-cream p-6 text-center sm:p-10">
+          <p className="text-lg leading-relaxed text-bark">
+            To register your interest, email us at
+          </p>
+          <a
+            href="mailto:hello@backhome.ph?subject=Pilot%20interest"
+            className="mt-3 inline-block font-serif text-2xl text-forest underline decoration-forest/30 underline-offset-4 hover:decoration-forest"
+          >
+            hello@backhome.ph
+          </a>
         </div>
 
         {/* Sits outside InterestForm so it stays visible after submission.
