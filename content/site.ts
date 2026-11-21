@@ -114,7 +114,7 @@ export const howWeCheck = {
     {
       number: "03",
       title: "We re-check every 6 months",
-      body: "Badges lapse if they aren't renewed, and every listing shows the date we last checked it.",
+      body: "Badges lapse if they aren't renewed. If a family reports a problem, the badge comes down until we've looked into it.",
     },
   ],
   key: [
@@ -168,17 +168,9 @@ export const founder = {
   eyebrow: "Our story",
   heading: "Built between Australia and Cebu",
   body: "BackHome was started by Yahnee and Martin, a Filipino-Australian family based in Australia. We know how hard it is to find care for a parent from far away, when the only options are a Facebook page and a relative's recommendation, so we're building the list we wished we had.",
-  /**
-   * The existing founder-slot photo. NOTE: this is a pharmacy pickup, not the
-   * founders, and the alt text says so. Swap in a real founder portrait when
-   * one exists (public/media, with a version suffix).
-   */
-  image: {
-    src: "/media/pharmacy-pickup.v1.webp",
-    width: 1280,
-    height: 1280,
-    alt: "A pharmacist handing a paper bag of medication across the counter to a customer collecting it.",
-  },
+  // No photo until a real founder portrait is supplied. To add one, put it in
+  // public/media with a version suffix and add an `image` here, then render
+  // it in components/home/founder-and-providers.tsx.
 } as const;
 
 export const providersCard = {

@@ -22,7 +22,7 @@ export type ListingCardData = {
   photo?: { src: string; alt: string };
   /** Filter attributes. */
   filter: {
-    checkState: "visited" | "called" | "lapsed" | "listed";
+    checkState: "visited" | "called" | "lapsed" | "listed" | "suspended";
     languages: string[];
     priceBands: string[];
     careModes: string[];

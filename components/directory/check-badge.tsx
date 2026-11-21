@@ -8,6 +8,7 @@ import { formatDate, type CheckStatus } from "@/lib/check";
  *   Called (current)   grey pill   + "checked 3 Nov 2026"
  *   Either, lapsed     sand pill "Check lapsed" + "last checked …"
  *   Listed             no pill, a plain line saying it hasn't been checked
+ *   Suspended          no badge at all, an "Under review" pill instead
  */
 export function CheckBadge({
   status,
@@ -17,6 +18,19 @@ export function CheckBadge({
   size?: "sm" | "md";
 }) {
   const text = size === "md" ? "text-sm" : "text-xs";
+
+  if (status.state === "suspended") {
+    return (
+      <p className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${text}`}>
+        <span className="rounded-pill border border-[#9a3412]/40 bg-[#fdf5f1] px-2.5 py-0.5 text-[#9a3412]">
+          Under review
+        </span>
+        <span className="text-bark">
+          a problem was reported on {formatDate(status.since)} and we&apos;re looking into it
+        </span>
+      </p>
+    );
+  }
 
   if (status.state === "unchecked") {
     return (

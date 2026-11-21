@@ -113,7 +113,11 @@ export function hasRealListings(
   );
 }
 
-/** Most recently checked first, among real listings with a current check. */
+/**
+ * Most recently checked first, among real listings with a current check.
+ * Suspended listings are excluded because their status is "suspended", not
+ * "current".
+ */
 export function recentlyChecked(limit: number, now = new Date()): Listing[] {
   return realListings()
     .filter((l) => checkStatus(l, now).state === "current")
@@ -121,7 +125,7 @@ export function recentlyChecked(limit: number, now = new Date()): Listing[] {
     .slice(0, limit);
 }
 
-/** Real providers with a current Visited or Called check. */
+/** Real providers with a current Visited or Called check (not suspended). */
 export function checkedCount(now = new Date()): number {
   return realListings().filter((l) => checkStatus(l, now).state === "current").length;
 }
@@ -137,14 +141,16 @@ export function lastUpdated(): IsoDate | undefined {
 
 /**
  * Current checks first (Visited, then Called, newest first), then lapsed, then
- * unchecked. Families should meet the best-evidenced options first.
+ * unchecked, then under review. Families should meet the best-evidenced
+ * options first.
  */
 function sortByCheck(items: Listing[], now = new Date()): Listing[] {
   const rank = (l: Listing) => {
     const s = checkStatus(l, now);
     if (s.state === "current") return s.level === "visited" ? 0 : 1;
     if (s.state === "lapsed") return 2;
-    return 3;
+    if (s.state === "unchecked") return 3;
+    return 4;
   };
   return [...items].sort(
     (a, b) =>
@@ -225,6 +231,9 @@ export function assertDirectoryIntegrity(): void {
     if (l.checkLevel !== "listed" && !l.checkDate) {
       problems.push(`${l.slug}: checkLevel "${l.checkLevel}" needs a checkDate.`);
     }
+    if (l.suspended && !/^\d{4}-\d{2}-\d{2}$/.test(l.suspended.since)) {
+      problems.push(`${l.slug}: suspended.since must be a YYYY-MM-DD date.`);
+    }
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(l.slug)) {
       problems.push(`${l.slug}: slug must be lowercase words joined by hyphens.`);
     }
@@ -266,9 +275,9 @@ export function toCardData(
       checkState:
         status.state === "unchecked"
           ? "listed"
-          : status.state === "lapsed"
-            ? "lapsed"
-            : status.level,
+          : status.state === "current"
+            ? status.level
+            : status.state,
       languages: listing.languages,
       priceBands: priceBandsFor(listing.price),
       careModes: listing.careModes,

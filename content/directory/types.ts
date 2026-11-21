@@ -58,6 +58,14 @@ export type Listing = {
   checkLevel: CheckLevel;
   /** Required unless checkLevel is "listed". */
   checkDate?: IsoDate;
+  /**
+   * Set when a family reports a problem and we are looking into it. The badge
+   * comes down and the listing shows "Under review"; it also drops out of the
+   * provider count and "Recently checked". Remove the field once resolved.
+   *
+   * The reason is for our records only and is never shown on the site.
+   */
+  suspended?: { reason: string; since: IsoDate };
 
   /** What they do, one item per line. */
   services: string[];

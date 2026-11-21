@@ -15,7 +15,9 @@ const TIME_ZONE = "Asia/Manila";
 export type CheckStatus =
   | { state: "current"; level: "visited" | "called"; date: IsoDate; expires: Date }
   | { state: "lapsed"; level: "visited" | "called"; date: IsoDate; expires: Date }
-  | { state: "unchecked" };
+  | { state: "unchecked" }
+  /** A problem was reported and we are looking into it. Overrides the badge. */
+  | { state: "suspended"; since: IsoDate };
 
 function parseIsoDate(date: IsoDate): Date {
   const [y, m, d] = date.split("-").map(Number);
@@ -29,9 +31,11 @@ function addMonths(date: Date, months: number): Date {
 }
 
 export function checkStatus(
-  listing: Pick<Listing, "checkLevel" | "checkDate">,
+  listing: Pick<Listing, "checkLevel" | "checkDate" | "suspended">,
   now = new Date(),
 ): CheckStatus {
+  if (listing.suspended) return { state: "suspended", since: listing.suspended.since };
+
   const level: CheckLevel = listing.checkLevel;
   if (level === "listed" || !listing.checkDate) return { state: "unchecked" };
 
