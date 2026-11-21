@@ -3,30 +3,38 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Breadcrumbs } from "@/components/directory/breadcrumbs";
-import { GUIDES, getGuide } from "@/content/guides";
+import { getPublishedGuide, publishedGuides } from "@/content/guides";
 
 export const dynamicParams = false;
 
+// Written guides only: shells are not built, so their URLs 404.
 export function generateStaticParams() {
-  return GUIDES.map((g) => ({ slug: g.slug }));
+  for (const g of publishedGuides) {
+    const missing = g.sections.filter((s) => !s.body?.trim());
+    if (missing.length) {
+      throw new Error(
+        `Guide "${g.slug}" is marked written but has no body for: ` +
+          missing.map((s) => s.heading).join(", "),
+      );
+    }
+  }
+  return publishedGuides.map((g) => ({ slug: g.slug }));
 }
 
 export async function generateMetadata(
   props: PageProps<"/guides/[slug]">,
 ): Promise<Metadata> {
-  const guide = getGuide((await props.params).slug);
+  const guide = getPublishedGuide((await props.params).slug);
   if (!guide) return {};
   return {
     title: `${guide.title} | BackHome`,
     description: guide.summary,
     alternates: { canonical: `/guides/${guide.slug}` },
-    // Shells are placeholders: keep them out of search until written.
-    robots: guide.written ? undefined : { index: false, follow: true },
   };
 }
 
 export default async function GuidePage(props: PageProps<"/guides/[slug]">) {
-  const guide = getGuide((await props.params).slug);
+  const guide = getPublishedGuide((await props.params).slug);
   if (!guide) notFound();
 
   return (
@@ -39,22 +47,15 @@ export default async function GuidePage(props: PageProps<"/guides/[slug]">) {
         <p className="mt-5 text-lg leading-relaxed text-bark">{guide.summary}</p>
       </header>
 
-      {guide.written ? null : (
-        <p className="mt-8 rounded-sm border border-line bg-cream p-5 text-sm leading-relaxed text-bark">
-          We&apos;re still writing this guide. In the meantime, you can{" "}
-          <Link href="/help" className="text-forest underline underline-offset-4">
-            ask us directly
-          </Link>
-          .
-        </p>
-      )}
-
       <div className="mt-10 space-y-10">
         {guide.sections.map((s) => (
           <section key={s.heading}>
             <h2 className="type-h4 text-forest">{s.heading}</h2>
-            {/* [TO WRITE] markers stay visible until the guide is written. */}
-            <p className="mt-3 leading-relaxed text-bark">[TO WRITE] {s.toWrite}</p>
+            {(s.body ?? "").split(/\n\s*\n/).map((para, i) => (
+              <p key={i} className="mt-3 leading-relaxed text-ink">
+                {para.trim()}
+              </p>
+            ))}
           </section>
         ))}
       </div>

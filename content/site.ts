@@ -1,4 +1,4 @@
-import type { GuideSlug } from "@/content/guides";
+import { hasPublishedGuides, type GuideSlug } from "@/content/guides";
 
 /* ---------------------------------------------------------------------------
    BackHome — site-wide copy and homepage copy.
@@ -23,7 +23,8 @@ export const site = {
 export const nav = {
   links: [
     { label: "Find care", href: "/#find-care" },
-    { label: "Guides", href: "/guides" },
+    // Shown once the first guide is written.
+    ...(hasPublishedGuides ? [{ label: "Guides", href: "/guides" }] : []),
     { label: "How we check", href: "/how-we-check" },
     { label: "For providers", href: "/for-providers" },
   ],
@@ -74,6 +75,8 @@ export const situations = {
   eyebrow: "Not sure where to start?",
   heading: "Start from what's happening",
   cta: "Read the guide",
+  /** Used while a card's guide is still unwritten: the card links to /help. */
+  ctaUnwritten: "Ask us for help",
   cards: [
     {
       title: "Dad's just been discharged",
@@ -192,7 +195,7 @@ export const footer = {
   description:
     "BackHome is a checked directory of elder care services in Cebu, for Filipino families near and far.",
   backhomeLinks: [
-    { label: "Guides", href: "/guides" },
+    ...(hasPublishedGuides ? [{ label: "Guides", href: "/guides" }] : []),
     { label: "How we check", href: "/how-we-check" },
     { label: "Get help finding care", href: "/help" },
     { label: "For providers", href: "/for-providers" },

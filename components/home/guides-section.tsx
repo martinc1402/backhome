@@ -1,11 +1,15 @@
 import Link from "next/link";
 
 import { guidesSection } from "@/content/site";
-import { getGuide } from "@/content/guides";
+import { getPublishedGuide } from "@/content/guides";
 import { SectionHeading } from "@/components/ui/section-heading";
 
 export function GuidesSection() {
-  const guides = guidesSection.featured.map((slug) => getGuide(slug)!);
+  // Only written guides; the section is hidden until at least one exists.
+  const guides = guidesSection.featured
+    .map((slug) => getPublishedGuide(slug))
+    .filter((g) => g !== undefined);
+  if (guides.length === 0) return null;
 
   return (
     <section id="guides" className="scroll-mt-24 bg-base py-20 sm:py-28">

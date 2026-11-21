@@ -4,8 +4,10 @@
    Slugs are permanent once published. The bodies are still to be written:
    each guide is a shell with an outline marked [TO WRITE].
 
-   Shells are noindexed and left out of the sitemap. When a guide is written,
-   replace its outline with the real sections and set `written: true`.
+   Shells are hidden: they 404, and nothing links to them. When a guide is
+   written, replace its outline with the real sections and set
+   `written: true`; it then appears on /guides, the homepage, the nav and
+   the sitemap. The Guides nav and footer links appear with the first one.
 --------------------------------------------------------------------------- */
 
 export type Guide = {
@@ -16,8 +18,12 @@ export type Guide = {
   summary: string;
   /** False while the guide is a shell. Unwritten guides are noindexed. */
   written: boolean;
-  /** Section headings, each with a note on what it should cover. */
-  sections: readonly { heading: string; toWrite: string }[];
+  /**
+   * The guide's sections. While it's a shell, `toWrite` notes what each should
+   * cover. Add `body` (paragraphs separated by blank lines) to every section
+   * before setting `written: true`; the build fails otherwise.
+   */
+  sections: readonly { heading: string; toWrite?: string; body?: string }[];
 };
 
 export const GUIDES = [
@@ -203,4 +209,14 @@ export type GuideSlug = (typeof GUIDES)[number]["slug"];
 
 export function getGuide(slug: string): Guide | undefined {
   return GUIDES.find((g) => g.slug === slug);
+}
+
+/** Written guides only. Shells are never shown or linked. */
+export const publishedGuides: readonly Guide[] = GUIDES.filter((g) => g.written);
+
+export const hasPublishedGuides = publishedGuides.length > 0;
+
+/** A published guide by slug, or undefined for a shell or unknown slug. */
+export function getPublishedGuide(slug: string): Guide | undefined {
+  return publishedGuides.find((g) => g.slug === slug);
 }
