@@ -6,7 +6,7 @@ import { renderLegalDoc } from "@/lib/legal-doc";
 export const metadata: Metadata = {
   title: "Privacy Policy — BackHome",
   description:
-    "How BackHome collects, uses and protects personal information during the Cebu pilot, and how to access, correct or delete your details.",
+    "What the BackHome forms collect, who receives it, how long we keep it, and how to ask us to delete your data.",
   alternates: { canonical: "/privacy" },
   robots: { index: true, follow: true },
 };

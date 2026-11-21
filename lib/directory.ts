@@ -83,6 +83,10 @@ export function getListing(category: string, slug: string): Listing | undefined 
   return listings.find((l) => l.category === category && l.slug === slug);
 }
 
+export function getListingBySlug(slug: string): Listing | undefined {
+  return listings.find((l) => l.slug === slug);
+}
+
 export function listingHref(listing: Pick<Listing, "category" | "slug">): string {
   return `/cebu/${listing.category}/${listing.slug}`;
 }

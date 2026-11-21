@@ -24,7 +24,8 @@ const variants: Record<Variant, string> = {
 const sizes: Record<Size, string> = {
   // min-h keeps every target comfortably tappable on a phone.
   md: "min-h-11 px-6 py-2.5 text-sm",
-  lg: "min-h-14 px-8 py-4 text-base",
+  // text-[1rem], not text-base: --color-base makes text-base a colour here.
+  lg: "min-h-14 px-8 py-4 text-[1rem]",
 };
 
 type ButtonBaseProps = {
